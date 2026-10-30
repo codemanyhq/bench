@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="120" viewBox="0 0 840 120" role="img" aria-label="Results arrive after the first nightly run" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace">
+<rect x="0.5" y="0.5" width="839" height="119" rx="12" fill="#0d1117" stroke="#27272a"/>
+<circle cx="36" cy="50" r="5" fill="#10b981"/>
+<text x="54" y="56" font-size="18" font-weight="600" fill="#f4f4f5">Results arrive after the first nightly run</text>
+<text x="54" y="86" font-size="14" fill="#a1a1aa">Every night at 03:17 UTC · GitHub vs Codemany</text>
+</svg>

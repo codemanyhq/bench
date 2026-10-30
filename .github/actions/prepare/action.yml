@@ -1,0 +1,80 @@
+# prepare — everything before the measured `build` step (2026-10-30).
+# 1. fresh checkout of the pinned project into ./src (fresh files on BOTH sides)
+# 2. the same toolchain version on both sides
+# 3. every cache pointed at ONE folder, $BENCH_CACHE (scripts/env.sh):
+#    cold → an empty folder; warm → yesterday's folder (GitHub: restored from its
+#    cache service; Codemany: still on the machine's disk).
+# Reads BENCH_PROJECT / BENCH_MODE / BENCH_SIDE from the job env.
+name: prepare
+description: Check out a pinned project, set up its toolchain and wire its caches.
+inputs:
+  repo:
+    description: owner/name of the project
+    required: true
+  sha:
+    description: full commit SHA to build
+    required: true
+  lang:
+    description: Rust | Go | Next.js | Docker | Swift
+    required: true
+  toolchain:
+    description: toolchain version (see data/projects.json)
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: fresh source folder
+      shell: bash
+      run: rm -rf "${GITHUB_WORKSPACE:?}/src"
+
+    - name: checkout project
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        repository: ${{ inputs.repo }}
+        ref: ${{ inputs.sha }}
+        path: src
+        persist-credentials: false
+
+    - name: rust toolchain
+      if: inputs.lang == 'Rust'
+      shell: bash
+      env:
+        TOOLCHAIN: ${{ inputs.toolchain }}
+      run: rustup toolchain install "$TOOLCHAIN" --profile minimal --no-self-update
+
+    - name: go toolchain
+      if: inputs.lang == 'Go'
+      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      with:
+        go-version-file: src/go.mod
+        cache: false
+
+    - name: node toolchain
+      if: inputs.lang == 'Next.js'
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: ${{ inputs.toolchain }}
+        package-manager-cache: false
+
+    - name: wire caches
+      shell: bash
+      env:
+        BENCH_LANG: ${{ inputs.lang }}
+        BENCH_SHA: ${{ inputs.sha }}
+        BENCH_TOOLCHAIN: ${{ inputs.toolchain }}
+      run: bash "$GITHUB_WORKSPACE/bench/scripts/env.sh"
+
+    - name: restore cache
+      id: restore
+      if: env.BENCH_SIDE == 'github' && env.BENCH_MODE == 'warm'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.BENCH_CACHE }}
+        key: ${{ env.BENCH_CACHE_KEY }}
+
+    - name: remember cache hit
+      if: env.BENCH_SIDE == 'github' && env.BENCH_MODE == 'warm'
+      shell: bash
+      env:
+        HIT: ${{ steps.restore.outputs.cache-hit }}
+      run: echo "BENCH_CACHE_HIT=${HIT:-false}" >> "$GITHUB_ENV"

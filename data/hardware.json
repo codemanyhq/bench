@@ -1,0 +1,56 @@
+{
+  "codemany": [
+    {
+      "id": "codemany-linux-01",
+      "name": "Mini PC",
+      "os": "linux",
+      "cpu": "AMD Ryzen 7 8745H (8 cores / 16 threads)",
+      "cores": 8,
+      "ramGB": 32,
+      "diskGB": 1000,
+      "priceUSD": null,
+      "lifeYears": 3,
+      "watts": null,
+      "buyUrl": null,
+      "buyNote": null
+    },
+    {
+      "id": "codemany-mac-01",
+      "name": "Mac mini",
+      "os": "macos",
+      "cpu": "Apple silicon, 12 cores (Mac18,5)",
+      "cores": 12,
+      "ramGB": 16,
+      "diskGB": 256,
+      "priceUSD": null,
+      "lifeYears": 3,
+      "watts": null,
+      "buyUrl": "https://www.apple.com/mac-mini/",
+      "buyNote": "12-core chip, 16 GB memory, 256 GB disk"
+    }
+  ],
+  "github": [
+    {
+      "label": "ubuntu-latest",
+      "cpu": "4 vCPU (x64)",
+      "ramGB": 16,
+      "diskGB": 14,
+      "perMinuteUSD": 0.006,
+      "priceNote": "Priced at the cheaper 2-core Linux rate; speed is measured on the faster 4-core public-repo runner.",
+      "source": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "specsSource": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "asOf": "2026-10-30"
+    },
+    {
+      "label": "macos-latest",
+      "cpu": "3 vCPU (Apple M1, arm64)",
+      "ramGB": 7,
+      "diskGB": 14,
+      "perMinuteUSD": 0.062,
+      "priceNote": "macOS 3-4 core rate.",
+      "source": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "specsSource": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "asOf": "2026-10-30"
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+# bench — the same pinned open-source builds on GitHub-hosted runners and on Codemany
+# runners, every night (2026-10-30).
+#
+# SAFETY: this public repo has self-hosted runners, so the ONLY triggers are `schedule`
+# and `workflow_dispatch`. Never add pull_request / pull_request_target / issue_comment /
+# push-from-fork triggers: they would let anyone run code on the Codemany machines.
+#
+# Shape: `plan` turns data/projects.json into matrices, then three bench jobs run
+# project × mode. Codemany jobs run one at a time (max-parallel: 1) so every measured
+# build gets the whole machine, exactly like a fresh GitHub VM does.
+# Every bench job has ONE step named `build`: that step's time is the headline number
+# (scripts/collect.mjs reads it). Job names are `<project> · <side> · <mode>`.
+name: bench
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bench
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      github: ${{ steps.plan.outputs.github }}
+      linux: ${{ steps.plan.outputs.linux }}
+      macos: ${{ steps.plan.outputs.macos }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: plan
+        run: bash scripts/plan.sh data/projects.json >> "$GITHUB_OUTPUT"
+
+  github:
+    name: ${{ matrix.project }} · github · ${{ matrix.mode }}
+    needs: plan
+    runs-on: ${{ matrix.os == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.github) }}
+    env:
+      BENCH_PROJECT: ${{ matrix.project }}
+      BENCH_MODE: ${{ matrix.mode }}
+      BENCH_SIDE: github
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: bench
+          persist-credentials: false
+      - name: prepare
+        uses: ./bench/.github/actions/prepare
+        with:
+          repo: ${{ matrix.repo }}
+          sha: ${{ matrix.sha }}
+          lang: ${{ matrix.lang }}
+          toolchain: ${{ matrix.toolchain }}
+      - name: build
+        working-directory: src
+        run: bash ../bench/scripts/build.sh
+      # Warm only: keep tonight's caches for tomorrow (GitHub's cache service).
+      - name: save cache
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.BENCH_CACHE }}
+          key: ${{ env.BENCH_CACHE_KEY }}
+      - name: cleanup
+        if: always()
+        run: bash bench/scripts/cleanup.sh
+
+  codemany-linux:
+    name: ${{ matrix.project }} · codemany · ${{ matrix.mode }}
+    needs: plan
+    if: needs.plan.outputs.linux != '[]'
+    runs-on: [self-hosted, Linux, codemany]
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.linux) }}
+    env:
+      BENCH_PROJECT: ${{ matrix.project }}
+      BENCH_MODE: ${{ matrix.mode }}
+      BENCH_SIDE: codemany
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: bench
+          persist-credentials: false
+      - name: prepare
+        uses: ./bench/.github/actions/prepare
+        with:
+          repo: ${{ matrix.repo }}
+          sha: ${{ matrix.sha }}
+          lang: ${{ matrix.lang }}
+          toolchain: ${{ matrix.toolchain }}
+      - name: build
+        working-directory: src
+        run: bash ../bench/scripts/build.sh
+      - name: cleanup
+        if: always()
+        run: bash bench/scripts/cleanup.sh
+
+  codemany-macos:
+    name: ${{ matrix.project }} · codemany · ${{ matrix.mode }}
+    needs: plan
+    if: needs.plan.outputs.macos != '[]'
+    runs-on: [self-hosted, macOS, codemany]
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.macos) }}
+    env:
+      BENCH_PROJECT: ${{ matrix.project }}
+      BENCH_MODE: ${{ matrix.mode }}
+      BENCH_SIDE: codemany
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: bench
+          persist-credentials: false
+      - name: prepare
+        uses: ./bench/.github/actions/prepare
+        with:
+          repo: ${{ matrix.repo }}
+          sha: ${{ matrix.sha }}
+          lang: ${{ matrix.lang }}
+          toolchain: ${{ matrix.toolchain }}
+      - name: build
+        working-directory: src
+        run: bash ../bench/scripts/build.sh
+      - name: cleanup
+        if: always()
+        run: bash bench/scripts/cleanup.sh

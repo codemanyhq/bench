@@ -1,0 +1,63 @@
+# collect — after each bench run, read its job timings from the GitHub API, append them
+# to data/results.json, redraw charts/ + the README tables, and commit (2026-10-30).
+#
+# SAFETY: workflow_run always runs this file from main. It only accepts bench runs from
+# this repo that came from `schedule` or `workflow_dispatch` (bench has no other
+# triggers), so no fork code ever reaches this write-enabled job.
+name: collect
+
+on:
+  workflow_run:
+    workflows: [bench]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: bench run id to collect (empty = the last 10 bench runs)
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    name: collect
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.head_repository.full_name == github.repository &&
+       (github.event.workflow_run.event == 'schedule' ||
+        github.event.workflow_run.event == 'workflow_dispatch'))
+    runs-on: [self-hosted, Linux, codemany]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.x
+          package-manager-cache: false
+      - name: collect
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BENCH_RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id }}
+        run: node scripts/collect.mjs
+      - name: render
+        run: node scripts/render.mjs
+      - name: commit
+        run: |
+          git add data charts README.md
+          if git diff --cached --quiet; then
+            echo "Nothing new to commit."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "bench: results for $(date -u +%F)"
+          git push origin HEAD:main
