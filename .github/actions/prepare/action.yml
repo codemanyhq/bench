@@ -40,7 +40,17 @@ runs:
       shell: bash
       env:
         TOOLCHAIN: ${{ inputs.toolchain }}
-      run: rustup toolchain install "$TOOLCHAIN" --profile minimal --no-self-update
+      # 2026-10-30: a Codemany machine may have no rustup (it isn't a Codemany add-on),
+      # so install it once into a per-user folder (no sudo), kept for later nights.
+      run: |
+        if ! command -v rustup >/dev/null; then
+          export RUSTUP_HOME="$HOME/.cache/codemany-bench/rustup" CARGO_HOME="$HOME/.cache/codemany-bench/cargo-bin"
+          [ -x "$CARGO_HOME/bin/rustup" ] || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile minimal --default-toolchain none
+          { echo "RUSTUP_HOME=$RUSTUP_HOME"; } >> "$GITHUB_ENV"
+          echo "$CARGO_HOME/bin" >> "$GITHUB_PATH"
+          export PATH="$CARGO_HOME/bin:$PATH"
+        fi
+        rustup toolchain install "$TOOLCHAIN" --profile minimal --no-self-update
 
     - name: go toolchain
       if: inputs.lang == 'Go'

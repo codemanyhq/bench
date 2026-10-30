@@ -95,6 +95,11 @@ jobs:
       BENCH_MODE: ${{ matrix.mode }}
       BENCH_SIDE: codemany
     steps:
+      # 2026-10-30: says out loud that this job needs Docker (with buildx), so Codemany's
+      # workflow scan sees it, installs it on the machine and holds jobs until it's there.
+      - name: docker check
+        if: matrix.lang == 'Docker'
+        run: docker buildx version
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: bench
