@@ -53,5 +53,101 @@
     "command": "swift build -c release --product swiftlint",
     "url": "https://github.com/realm/SwiftLint",
     "toolchain": "xcode"
+  },
+  {
+    "id": "typescript",
+    "name": "TypeScript 7 compiler",
+    "repo": "microsoft/TypeScript",
+    "sha": "6161772c1370bdd4a82f808e6823bd755eb1870d",
+    "lang": "Node.js",
+    "os": "linux",
+    "command": "npm ci && npx hereby build",
+    "url": "https://github.com/microsoft/TypeScript",
+    "toolchain": "24.22.1",
+    "trial": true
+  },
+  {
+    "id": "ruff",
+    "name": "Ruff",
+    "repo": "astral-sh/ruff",
+    "sha": "049c351befba87447d3d50a2ee3d617ce3c2a264",
+    "lang": "Rust",
+    "os": "linux",
+    "command": "cargo build --release --locked --bin ruff",
+    "url": "https://github.com/astral-sh/ruff",
+    "toolchain": "1.99.0",
+    "trial": true
+  },
+  {
+    "id": "django",
+    "name": "Django tests",
+    "repo": "django/django",
+    "sha": "a05e16a7230fe33d3f43f4a3aaed103cebb42efc",
+    "lang": "Python",
+    "os": "linux",
+    "command": "pip install -r tests/requirements/py3-free-threading.txt -e . && python -Wall tests/runtests.py",
+    "url": "https://github.com/django/django",
+    "toolchain": "3.15t",
+    "trial": true
+  },
+  {
+    "id": "kubernetes",
+    "name": "Kubernetes (kubectl)",
+    "repo": "kubernetes/kubernetes",
+    "sha": "aa8de068063335aee4a78589ee0d5c70b448e266",
+    "lang": "Go",
+    "os": "linux",
+    "command": "make WHAT=cmd/kubectl",
+    "url": "https://github.com/kubernetes/kubernetes",
+    "toolchain": ".go-version",
+    "trial": true
+  },
+  {
+    "id": "firefox-ios",
+    "name": "Firefox for iOS",
+    "repo": "mozilla-mobile/firefox-ios",
+    "sha": "167e2d22f55c47bcaad32dd5d95804b7f7a924a6",
+    "lang": "iOS",
+    "os": "macos",
+    "command": "./bootstrap.sh firefox && xcodebuild build-for-testing -scheme Fennec (iOS Simulator)",
+    "url": "https://github.com/mozilla-mobile/firefox-ios",
+    "toolchain": "xcode",
+    "trial": true
+  },
+  {
+    "id": "tca",
+    "name": "Composable Architecture tests",
+    "repo": "pointfreeco/swift-composable-architecture",
+    "sha": "bb175b544d019c7f23a2e41ae29d8c70592aeb58",
+    "lang": "Swift",
+    "os": "macos",
+    "command": "xcodebuild test -scheme ComposableArchitecture -destination platform=macOS",
+    "url": "https://github.com/pointfreeco/swift-composable-architecture",
+    "toolchain": "xcode",
+    "trial": true
+  },
+  {
+    "id": "nowinandroid",
+    "name": "Now in Android",
+    "repo": "android/nowinandroid",
+    "sha": "2982e63cb691ad49cd009aab43dc206fee6699c2",
+    "lang": "Android",
+    "os": "linux",
+    "command": "./gradlew :app:assemble -PminifyWithR8=false",
+    "url": "https://github.com/android/nowinandroid",
+    "toolchain": "21",
+    "trial": true
+  },
+  {
+    "id": "neovim",
+    "name": "Neovim",
+    "repo": "neovim/neovim",
+    "sha": "2fc7032df9e7b7e4d625cc205a5ff9cdb0f02b27",
+    "lang": "C",
+    "os": "linux",
+    "command": "cmake --preset ci -D CMAKE_BUILD_TYPE=Release && cmake --build build",
+    "url": "https://github.com/neovim/neovim",
+    "toolchain": "cmake",
+    "trial": true
   }
 ]

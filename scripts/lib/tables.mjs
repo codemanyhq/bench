@@ -16,7 +16,7 @@ export function projectsTable(projects) {
   return table(
     ['Project', 'Language', 'Computer', 'Build command', 'Exact commit'],
     projects.map((p) => [
-      `[${p.name}](${p.url})`,
+      `[${p.name}](${p.url})${p.trial ? ' *(new: results appear after 3 clean nights)*' : ''}`,
       p.lang,
       osName(p.os),
       `\`${p.command}\``,

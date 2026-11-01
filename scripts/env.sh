@@ -43,6 +43,28 @@ case "$BENCH_LANG" in
     corepack enable                        # yarn version from package.json "packageManager"
     mkdir -p "$cache/next" "$src/.next"
     ln -sfn "$cache/next" "$src/.next/cache" ;;
+  Node.js)                                 # TypeScript 7: npm + a Go compile (hereby)
+    put npm_config_cache "$cache/npm"
+    put npm_config_update_notifier false
+    put GOMODCACHE "$cache/gomod"
+    put GOCACHE "$cache/gobuild"
+    put GOFLAGS -modcacherw
+    put GOTOOLCHAIN local ;;
+  Python)
+    put PIP_CACHE_DIR "$cache/pip"
+    put PIP_DISABLE_PIP_VERSION_CHECK 1
+    put PYTHONUNBUFFERED 1 ;;
+  iOS)                                     # xcodebuild caches go by flag (build.sh)
+    put npm_config_cache "$cache/npm"
+    put npm_config_update_notifier false ;;
+  Android)
+    put GRADLE_USER_HOME "$cache/gradle"           # wrapper, dependencies, build cache
+    put ANDROID_USER_HOME "$cache/android-user"
+    put GRADLE_OPTS "-Dorg.gradle.welcome=never" ;;
+  C)                                       # Neovim: its deps dir is its cache (CI caches .deps)
+    put DEPS_BUILD_DIR "$cache/deps"
+    put CC gcc
+    put CCACHE_DISABLE 1 ;;
   Docker)
     # A fresh BuildKit builder per job: base images are pulled on both sides.
     builder="bench-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$BENCH_PROJECT-$BENCH_MODE"
@@ -59,6 +81,11 @@ case "$BENCH_LANG" in
   Rust)    rustc --version ;;
   Go)      go version ;;
   Next.js) node --version ;;
+  Node.js) node --version; go version ;;
+  Python)  python --version ;;
+  iOS)     xcodebuild -version | sed -n 1p; node --version ;;
+  Android) java -version 2>&1 | sed -n 1p ;;
+  C)       gcc --version | sed -n 1p; cmake --version | sed -n 1p ;;
   Docker)  docker version --format 'docker {{.Server.Version}}' ;;
   Swift)   xcodebuild -version | sed -n 1p; swift --version 2>&1 | sed -n 1p ;;
 esac
