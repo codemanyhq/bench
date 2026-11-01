@@ -49,6 +49,7 @@
  * @property {string} command    the project's own CI build command
  * @property {string} url
  * @property {string} toolchain
+ * @property {boolean} [trial]  runs nightly, kept out of the published numbers (2026-11-01)
  */
 
 /**

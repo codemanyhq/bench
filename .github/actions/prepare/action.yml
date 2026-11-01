@@ -15,7 +15,7 @@ inputs:
     description: full commit SHA to build
     required: true
   lang:
-    description: Rust | Go | Next.js | Docker | Swift
+    description: Rust | Go | Next.js | Node.js | Python | Docker | Swift | iOS | Android | C
     required: true
   toolchain:
     description: toolchain version (see data/projects.json)
@@ -56,15 +56,74 @@ runs:
       if: inputs.lang == 'Go'
       uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
-        go-version-file: src/go.mod
+        go-version-file: src/${{ inputs.toolchain }}   # go.mod, or .go-version (Kubernetes pins its exact Go there)
         cache: false
 
     - name: node toolchain
-      if: inputs.lang == 'Next.js'
+      if: inputs.lang == 'Next.js' || inputs.lang == 'Node.js'
       uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: ${{ inputs.toolchain }}
         package-manager-cache: false
+
+    # 2026-11-01: TypeScript 7 is the Go port: its own .github/actions/setup-go installs
+    # Microsoft's Go build (1.27, resolved to 1.27.3 in its CI on 2026-10-30).
+    - name: go toolchain (TypeScript)
+      if: inputs.lang == 'Node.js'
+      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      with:
+        go-version: '1.27.3'
+        go-download-base-url: https://aka.ms/golang/release/latest
+        cache: false
+
+    # 2026-11-01: Django's own Linux SQLite job runs free-threaded Python 3.15t (tests.yml).
+    - name: python toolchain
+      if: inputs.lang == 'Python'
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: ${{ inputs.toolchain }}
+        allow-prereleases: true
+
+    # 2026-11-01: Firefox for iOS's bootstrap.sh runs npm install + a webpack build.
+    - name: node for the iOS bootstrap
+      if: inputs.lang == 'iOS'
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '24'
+        package-manager-cache: false
+
+    # 2026-11-01: Now in Android's CI uses Zulu JDK 21 (Build.yaml:33-37).
+    - name: java toolchain
+      if: inputs.lang == 'Android'
+      uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+      with:
+        distribution: zulu
+        java-version: ${{ inputs.toolchain }}
+
+    # GitHub's image has an Android SDK in $ANDROID_HOME; a Codemany machine has none
+    # and no sudo, so it gets one in a per-user folder (kept for later nights, outside
+    # $BENCH_CACHE). Both sides then install platform 37 here, before the stopwatch, so
+    # neither downloads it inside the measured build.
+    - name: android sdk folder (Codemany)
+      if: inputs.lang == 'Android' && env.BENCH_SIDE == 'codemany'
+      shell: bash
+      run: |
+        sdk="$HOME/.cache/codemany-bench/android-sdk"; mkdir -p "$sdk"
+        { echo "ANDROID_HOME=$sdk"; echo "ANDROID_SDK_ROOT=$sdk"; } >> "$GITHUB_ENV"
+    - name: android sdk
+      if: inputs.lang == 'Android'
+      uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+      with:
+        packages: 'platform-tools platforms;android-37'
+        log-accepted-android-sdk-licenses: false
+
+    # 2026-11-01: the same CMake and Ninja on both sides, in user space (no sudo).
+    - name: cmake + ninja
+      if: inputs.lang == 'C'
+      uses: lukka/get-cmake@f86dd60acae0d132056913e248bdabf0e0580b7a # v4.4.5
+      with:
+        useLocalCache: false
+        useCloudCache: false
 
     - name: wire caches
       shell: bash

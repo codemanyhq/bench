@@ -49,8 +49,11 @@ function placeholderCharts() {
 /** Every chart + the results block, all in memory first. @param {BenchModules} m @param {Data} d */
 function draw(m, d) {
   const now = process.env.BENCH_NOW ? new Date(process.env.BENCH_NOW) : new Date();
-  const cold = m.data.summarize(d.results, d.projects, d.hardware, { mode: 'cold', now });
-  const warm = m.data.summarize(d.results, d.projects, d.hardware, { mode: 'warm', now });
+  // 2026-11-01: trial projects run every night but stay out of the published numbers
+  // until they have proven stable (data/projects.json "trial": true).
+  const published = d.projects.filter((p) => !p.trial);
+  const cold = m.data.summarize(d.results, published, d.hardware, { mode: 'cold', now });
+  const warm = m.data.summarize(d.results, published, d.hardware, { mode: 'warm', now });
   if (!hasNumbers(cold) && !hasNumbers(warm)) return { files: placeholderCharts(), block: NO_RESULTS };
   const files = placeholderCharts();
   for (const theme of THEMES) {
