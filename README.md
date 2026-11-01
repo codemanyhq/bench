@@ -29,10 +29,10 @@ Time to build each project from scratch (the middle of the last 30 nights). Upda
 
 | Project | GitHub | Codemany | Result | GitHub price¹ |
 | --- | --- | --- | --- | --- |
-| ripgrep | 25s | 12s | 2.1× faster | $0.01 |
-| Hugo | 1m 03s | 30s | 2.1× faster | $0.02 |
-| react.dev | 1m 57s | 1m 15s | 1.6× faster | $0.03 |
-| Excalidraw | 1m 19s | — | — | $0.02 |
+| ripgrep | 25s | 12s | 2.1× faster | <$0.01 |
+| Hugo | 1m 03s | 30s | 2.1× faster | $0.01 |
+| react.dev | 1m 57s | 1m 15s | 1.6× faster | $0.01 |
+| Excalidraw | 1m 19s | — | — | $0.01 |
 | SwiftLint | 12m 53s | 2m 56s | 4.4× faster | $0.82 |
 
 ### With saved files from last night
@@ -44,10 +44,10 @@ Time to build each project from scratch (the middle of the last 30 nights). Upda
 
 | Project | GitHub | Codemany | Result | GitHub price¹ |
 | --- | --- | --- | --- | --- |
-| ripgrep | 23s | 12s | 1.9× faster | $0.01 |
-| Hugo | 1m 19s | 29s | 2.7× faster | $0.02 |
-| react.dev | 2m 04s | 1m 14s | 1.7× faster | $0.03 |
-| Excalidraw | 2m 30s | — | — | $0.04 |
+| ripgrep | 23s | 12s | 1.9× faster | <$0.01 |
+| Hugo | 1m 19s | 29s | 2.7× faster | $0.01 |
+| react.dev | 2m 04s | 1m 14s | 1.7× faster | $0.02 |
+| Excalidraw | 2m 30s | — | — | $0.02 |
 | SwiftLint | 15m 58s | 4m 24s | 3.6× faster | $1.02 |
 
 ### Night by night (from scratch)
@@ -88,6 +88,7 @@ Time to build each project from scratch (the middle of the last 30 nights). Upda
 </picture>
 
 ¹ What one GitHub build would cost for private code, at the prices in [The computers](#the-computers).
+These GitHub times are from public code. On Linux that is a 4-core computer; private code gets a 2-core one.
 
 </details>
 <!-- bench:end -->
@@ -102,24 +103,35 @@ You buy a Codemany computer once and keep it.
 | Mini PC (Linux) | 8 cores, 32 GB memory, 1 TB disk | [Get one](https://www.amazon.com/dp/B0DRVSK2T9) (MINISFORUM UM870, 32 GB, 1 TB) |
 | Mac mini (macOS) | 12 cores, 16 GB memory, 256 GB disk | [Get one](https://www.amazon.com/dp/B0HGGJZ92H) (M6, 16 GB, 256 GB) |
 
-You rent a GitHub computer by the minute.
+You rent a GitHub computer by the minute. What you get depends on your code.
 
-| GitHub's computer | What's inside | Price per minute* |
+**For private code**
+
+| GitHub's computer | What's inside | Price per minute |
 | --- | --- | --- |
-| `ubuntu-latest` (Linux) | 4 vCPU (x64), 16 GB memory | [$0.012](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
-| `macos-latest` (macOS) | 3 vCPU (Apple M1, arm64), 7 GB memory | [$0.062](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
+| `ubuntu-latest` (Linux) | 2 cores, 7 GB memory, 14 GB disk | [$0.006](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
+| `macos-latest` (macOS) | 3 cores (Apple M1), 7 GB memory, 14 GB disk | [$0.062](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
 
-\* For private code, checked 2026-11-01 ([GitHub's prices](https://docs.github.com/en/billing/reference/actions-runner-pricing)).
+**For public code (free)**
+
+| GitHub's computer | What's inside | Price per minute |
+| --- | --- | --- |
+| `ubuntu-latest` (Linux) | 4 cores, 16 GB memory, 14 GB disk | Free |
+| `macos-latest` (macOS) | 3 cores (Apple M1), 7 GB memory, 14 GB disk | Free |
+
+Checked 2026-11-01 on GitHub's [price list](https://docs.github.com/en/billing/reference/actions-runner-pricing) and [computer list](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
 <!-- computers:end -->
 
-## Is it fair?
+## Fair and true
 
-Yes, and when we had to choose, we chose what helps GitHub.
+We show the real time and the real price. We don't make GitHub or Codemany look better than they are.
 
-- **Same code.** Both computers build the exact same version of each project.
-- **Same steps.** Each project's own build command, the same tools on both sides.
-- **Same night.** Both start at 03:17 UTC.
-- **You can check.** Every time in the table links to the real run on GitHub.
+- **Private code first.** That's the code teams pay for, so the tables show it first.
+- **Private times come once a week.** GitHub gives private code a smaller Linux computer (2 cores). The only way to get that computer is to build from a private project. So a private copy of this test runs every Sunday, and we copy its times here.
+- **Public code is free on GitHub.** It gets a bigger Linux computer (4 cores). Those times are under **More numbers**. Macs are the same for both.
+- **Same code, same steps.** Both sides build the exact same version, with the project's own build command and the same tools.
+- **You can check.** Each time links to its real run on GitHub. Only the private runs can't be opened, because that project is private.
+- **Codemany costs $20 a month** for 2 computers. Codemany runs on a computer you own. That computer isn't in this price.
 
 <details>
 <summary><b>How we test, in detail</b></summary>
@@ -151,15 +163,13 @@ Builds keep files around to go faster next time (a *cache*).
 | How | What it means |
 | --- | --- |
 | From scratch | Every saved file is thrown away first, on both computers. |
-| With saved files | Last night's files are kept. GitHub downloads them; Codemany already has them. |
+| With saved files | Last night's files are kept (private Linux: last week's). GitHub downloads them; Codemany already has them. |
 
-### Every guess helps GitHub
+### What we time
 
-| We assume | Why it helps GitHub |
-| --- | --- |
-| GitHub's speed = its free 4-CPU Linux computer | Private code gets a slower 2-CPU one. |
-| Codemany builds one project at a time | Its waiting time includes the build before it. |
-| We time only the `build` step | GitHub's extra setup (downloading tools and files) is left out. |
+- Only the `build` step. Getting tools and saved files ready happens before the clock starts, on both sides.
+- Codemany builds one project at a time, so each build gets the whole computer, like a fresh GitHub computer does.
+- Public builds start every night at 03:17 UTC. Private Linux builds start on Sundays at 05:17 UTC.
 
 ### Check it yourself
 
@@ -167,11 +177,13 @@ Builds keep files around to go faster next time (a *cache*).
 2. Pick a job, like `ripgrep · codemany · cold`.
 3. Open its `build` step. That time is the number in our table.
 
+Private Linux times come from `codemanyhq/bench-private`. It runs the same `github` job as [`bench.yml`](.github/workflows/bench.yml), with this repo's scripts, on GitHub's computer for private code. Only we can open its runs.
+
 The raw numbers are in [`data/results.json`](data/results.json); [`scripts/collect.mjs`](scripts/collect.mjs) reads them from GitHub. To run it yourself, fork this repo and connect a self-hosted runner with the labels `self-hosted`, `Linux` (or `macOS`) and `codemany`.
 
 ### Safety
 
-This repo never runs code from strangers: it runs only on a timer or the **Run workflow** button, never on pull requests. Builds get a read-only token, the collector only commits `data/`, `charts/` and this README, and every outside action and project is pinned to an exact commit.
+This repo never runs code from strangers: it runs only on a timer or the **Run workflow** button, never on pull requests. Builds get a read-only token. The collector reads the private copy with a read-only token, and only commits `data/`, `charts/` and this README. Every outside action and project is pinned to an exact commit.
 
 </details>
 

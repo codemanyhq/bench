@@ -16,13 +16,16 @@ import { replaceBlock } from './lib/blocks.mjs';
 import { ROOT, dataDir, readJson, writeText } from './lib/files.mjs';
 import { loadModules } from './lib/modules.mjs';
 import { placeholderSVG } from './lib/placeholder.mjs';
+import { codeResultsBlock } from './lib/results-code-md.mjs';
 import { NO_RESULTS, resultsBlock } from './lib/results-md.mjs';
+import { summarizeAll } from './lib/summaries.mjs';
 import { computersTable, projectsTable } from './lib/tables.mjs';
 
 /** @typedef {import('./lib/types.mjs').BenchModules} BenchModules */
 /** @typedef {import('./lib/types.mjs').Hardware} Hardware */
 /** @typedef {import('./lib/types.mjs').Project} Project */
 /** @typedef {import('./lib/types.mjs').ResultsFile} ResultsFile */
+/** @typedef {import('./lib/types.mjs').Summaries} Summaries */
 /** @typedef {import('./lib/types.mjs').Summary} Summary */
 /** @typedef {import('./lib/types.mjs').ThemeName} ThemeName */
 /** @typedef {{ results: ResultsFile, projects: Project[], hardware: Hardware }} Data */
@@ -52,8 +55,9 @@ function draw(m, d) {
   // 2026-11-01: trial projects run every night but stay out of the published numbers
   // until they have proven stable (data/projects.json "trial": true).
   const published = d.projects.filter((p) => !p.trial);
-  const cold = m.data.summarize(d.results, published, d.hardware, { mode: 'cold', now });
-  const warm = m.data.summarize(d.results, published, d.hardware, { mode: 'warm', now });
+  // 2026-11-01: private code first when the site module knows about code (summaries.mjs).
+  const sums = summarizeAll(m, d.results, published, d.hardware, now);
+  const { cold, warm } = sums.main;
   if (!hasNumbers(cold) && !hasNumbers(warm)) return { files: placeholderCharts(), block: NO_RESULTS };
   const files = placeholderCharts();
   for (const theme of THEMES) {
@@ -63,7 +67,10 @@ function draw(m, d) {
       files.set(`trend-${p.id}-${theme}.svg`, m.chart.trendSVG(p, { width: WIDTH, height: 220, theme }));
     }
   }
-  return { files, block: resultsBlock(cold, warm, m.data) };
+  const block = sums.publicCode
+    ? codeResultsBlock(sums.main, sums.publicCode, m.data, now)
+    : resultsBlock(cold, warm, m.data);
+  return { files, block };
 }
 
 /** @returns {Promise<{ files: Map<string, string>, block: string } | null>} null = keep old files */

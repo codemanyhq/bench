@@ -32,25 +32,51 @@
   "github": [
     {
       "label": "ubuntu-latest",
-      "cpu": "4 vCPU (x64)",
-      "ramGB": 16,
+      "code": "private",
+      "cpu": "2 vCPU (x64)",
+      "ramGB": 7,
       "diskGB": 14,
-      "perMinuteUSD": 0.012,
-      "priceNote": "Priced at the 4-core Linux rate: the runner we time (2026-11-01).",
+      "perMinuteUSD": 0.006,
+      "priceNote": "Private code gets a 2-core Linux computer. It costs $0.006 a minute.",
       "source": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
       "specsSource": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
       "asOf": "2026-11-01"
     },
     {
       "label": "macos-latest",
-      "cpu": "3 vCPU (Apple M1, arm64)",
+      "code": "private",
+      "cpu": "3 vCPU (Apple M1)",
       "ramGB": 7,
       "diskGB": 14,
       "perMinuteUSD": 0.062,
-      "priceNote": "macOS 3-4 core rate.",
+      "priceNote": "Private code gets a 3-core Mac. It costs $0.062 a minute.",
       "source": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
       "specsSource": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
-      "asOf": "2026-10-30"
+      "asOf": "2026-11-01"
+    },
+    {
+      "label": "ubuntu-latest",
+      "code": "public",
+      "cpu": "4 vCPU (x64)",
+      "ramGB": 16,
+      "diskGB": 14,
+      "perMinuteUSD": 0,
+      "priceNote": "Public code gets a bigger 4-core Linux computer. It is free.",
+      "source": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "specsSource": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "asOf": "2026-11-01"
+    },
+    {
+      "label": "macos-latest",
+      "code": "public",
+      "cpu": "3 vCPU (Apple M1)",
+      "ramGB": 7,
+      "diskGB": 14,
+      "perMinuteUSD": 0,
+      "priceNote": "Public code gets the same 3-core Mac. It is free.",
+      "source": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
+      "specsSource": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "asOf": "2026-11-01"
     }
   ]
 }

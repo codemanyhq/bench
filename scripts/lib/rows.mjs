@@ -9,8 +9,11 @@
 /** @typedef {import('./types.mjs').Mode} Mode */
 /** @typedef {import('./types.mjs').Conclusion} Conclusion */
 
-/** Bench job names are `<project> · <side> · <mode>` (see bench.yml). */
-const JOB_NAME = /^(.+) · (github|codemany) · (cold|warm)$/;
+/**
+ * Bench job names are `<project> · <side> · <mode>` (see bench.yml; 2026-11-01:
+ * bench-private.yml in codemanyhq/bench-private uses side `github-private`).
+ */
+const JOB_NAME = /^(.+) · (github-private|github|codemany) · (cold|warm)$/;
 const CONCLUSIONS = new Set(['success', 'failure', 'cancelled']);
 
 /** @param {string} name @returns {{ project: string, side: Side, mode: Mode } | null} */
@@ -54,7 +57,7 @@ export function toRow(run, job, projects) {
     side: name.side,
     os: project.os,
     // GitHub's runner names are throwaway VMs; the runs-on label is the useful bit.
-    runner: name.side === 'github' ? (job.labels[0] ?? 'github') : (job.runner_name ?? 'codemany'),
+    runner: name.side === 'codemany' ? (job.runner_name ?? 'codemany') : (job.labels[0] ?? 'github'),
     queueSec: Math.max(0, seconds(job.created_at, job.started_at)),
     jobSec: seconds(job.started_at, job.completed_at),
     buildSec: buildSeconds(job),
