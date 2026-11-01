@@ -96,8 +96,71 @@ Two small Codemany computers race two GitHub cloud computers.
 A robot fills this in after every nightly run.
 
 <!-- bench:start -->
-**No results yet.** The first nightly run starts at 03:17 UTC.
-Results arrive here right after it finishes.
+Median build time over the last 30 nights. Updated 2026-11-01.
+
+### From scratch (cold)
+
+| Project | GitHub | Codemany | Result | GitHub price¹ | Latest runs |
+| --- | --- | --- | --- | --- | --- |
+| ripgrep | 25s | 12s | 2.1× faster | <$0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144233) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144143) |
+| Hugo | 1m 03s | 30s | 2.1× faster | $0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144376) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144243) |
+| react.dev | 1m 57s | 1m 15s | 1.6× faster | $0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144258) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144116) |
+| Excalidraw | 1m 19s | — | — | $0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144334) |
+| SwiftLint | 12m 53s | 2m 56s | 4.4× faster | $0.82 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144319) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144121) |
+
+### With saved caches (warm)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/speed-warm-dark.svg">
+  <img alt="Build time with saved caches: GitHub vs Codemany" src="charts/speed-warm-light.svg">
+</picture>
+
+| Project | GitHub | Codemany | Result | GitHub price¹ | Latest runs |
+| --- | --- | --- | --- | --- | --- |
+| ripgrep | 23s | 12s | 1.9× faster | <$0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144237) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144253) |
+| Hugo | 1m 19s | 29s | 2.7× faster | $0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144332) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144198) |
+| react.dev | 2m 04s | 1m 14s | 1.7× faster | $0.02 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144299) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144172) |
+| Excalidraw | 2m 30s | — | — | $0.02 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144271) |
+| SwiftLint | 15m 58s | 4m 24s | 3.6× faster | $1.02 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144255) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144025) |
+
+### Night by night (from scratch)
+
+**ripgrep**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-ripgrep-dark.svg">
+  <img alt="ripgrep: build time per night" src="charts/trend-ripgrep-light.svg">
+</picture>
+
+**Hugo**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-hugo-dark.svg">
+  <img alt="Hugo: build time per night" src="charts/trend-hugo-light.svg">
+</picture>
+
+**react.dev**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-react-dev-dark.svg">
+  <img alt="react.dev: build time per night" src="charts/trend-react-dev-light.svg">
+</picture>
+
+**Excalidraw**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-excalidraw-dark.svg">
+  <img alt="Excalidraw: build time per night" src="charts/trend-excalidraw-light.svg">
+</picture>
+
+**SwiftLint**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-swiftlint-dark.svg">
+  <img alt="SwiftLint: build time per night" src="charts/trend-swiftlint-light.svg">
+</picture>
+
+¹ What one GitHub job would cost in a private repo, at the prices in [The computers](#the-computers).
 <!-- bench:end -->
 
 ## Check it yourself
