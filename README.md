@@ -127,7 +127,7 @@ Checked 2026-11-01 on GitHub's [price list](https://docs.github.com/en/billing/r
 We show the real time and the real price. We don't make GitHub or Codemany look better than they are.
 
 - **Private code first.** That's the code teams pay for, so the tables show it first.
-- **Private times come once a week.** GitHub gives private code a smaller Linux computer (2 cores). The only way to get that computer is to build from a private project. So a private copy of this test runs every Sunday, and we copy its times here.
+- **Private times come twice a week.** GitHub gives private code a smaller Linux computer (2 cores). The only way to get that computer is to build from a private project. So a private copy of this test runs every Sunday, and we copy its times here.
 - **Public code is free on GitHub.** It gets a bigger Linux computer (4 cores). Those times are under **More numbers**. Macs are the same for both.
 - **Same code, same steps.** Both sides build the exact same version, with the project's own build command and the same tools.
 - **You can check.** Each time links to its real run on GitHub. Only the private runs can't be opened, because that project is private.
@@ -169,7 +169,7 @@ Builds keep files around to go faster next time (a *cache*).
 
 - Only the `build` step. Getting tools and saved files ready happens before the clock starts, on both sides.
 - Codemany builds one project at a time, so each build gets the whole computer, like a fresh GitHub computer does.
-- Public builds start every night at 03:17 UTC. Private Linux builds start on Sundays at 05:17 UTC.
+- Public builds start every night at 03:17 UTC. Private Linux builds start on Sundays and Wednesdays at 05:17 UTC.
 
 ### Check it yourself
 

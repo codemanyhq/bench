@@ -6,8 +6,8 @@
 # triggers), so no fork code ever reaches this write-enabled job.
 #
 # 2026-11-01: also reads codemanyhq/bench-private (GitHub's computer for PRIVATE code,
-# Linux, Sundays 05:17 UTC) when the BENCH_PRIVATE_TOKEN secret exists (fine-grained,
-# Actions: read on that repo only); no secret = skipped. The Sunday 08:47 run picks up
+# Linux, Sundays and Wednesdays 05:17 UTC) when the BENCH_PRIVATE_TOKEN secret exists (fine-grained,
+# Actions: read on that repo only); no secret = skipped. The Sunday/Wednesday 08:47 run picks up
 # those times the same day instead of after Monday's bench.
 name: collect
 
@@ -16,7 +16,7 @@ on:
     workflows: [bench]
     types: [completed]
   schedule:
-    - cron: "47 8 * * 0"
+    - cron: "47 8 * * 0,3"
   workflow_dispatch:
     inputs:
       run_id:

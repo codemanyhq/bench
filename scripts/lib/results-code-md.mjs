@@ -2,7 +2,7 @@
 /**
  * The README "Results" block when the site module knows about code (2026-11-01):
  * private code first (what teams pay for), public code under "More numbers".
- * Private Linux GitHub times come from codemanyhq/bench-private, once a week. Until a
+ * Private Linux GitHub times come from codemanyhq/bench-private, twice a week (Sun + Wed). Until a
  * project has one, its public 4-core time stands in, marked † with a plain note.
  */
 import { picture } from './blocks.mjs';
@@ -14,8 +14,10 @@ import { isPrivateJobUrl } from './sources.mjs';
 /** @typedef {import('./types.mjs').ProjectSummary} ProjectSummary */
 /** @typedef {import('./results-tables.mjs').TableView} TableView */
 
-/** The private run starts Sundays 05:17 UTC; by noon its times should be in. */
+/** The private run starts Sundays and Wednesdays 05:17 UTC; by noon its times should be in. */
 const PRIVATE_DONE_HOUR_UTC = 12;
+/** UTC weekdays the private run starts (0 = Sunday, 3 = Wednesday; bench-private.yml). */
+const PRIVATE_DAYS = [0, 3];
 
 /** A private-code Linux row whose GitHub time is really the public 4-core one. @param {ProjectSummary} p */
 const isStandIn = (p) => p.os === 'linux' && p.github != null && !isPrivateJobUrl(p.github.lastJobUrl);
@@ -23,8 +25,9 @@ const isStandIn = (p) => p.os === 'linux' && p.github != null && !isPrivateJobUr
 /** When private times arrive, in words: "Sunday, November 8". @param {Date} now */
 export function nextPrivateRun(now) {
   const day = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const wait = (7 - day.getUTCDay()) % 7 || (now.getUTCHours() >= PRIVATE_DONE_HOUR_UTC ? 7 : 0);
-  day.setUTCDate(day.getUTCDate() + wait);
+  if (!PRIVATE_DAYS.includes(day.getUTCDay()) || now.getUTCHours() >= PRIVATE_DONE_HOUR_UTC) {
+    do day.setUTCDate(day.getUTCDate() + 1); while (!PRIVATE_DAYS.includes(day.getUTCDay()));
+  }
   return day.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });
 }
 
