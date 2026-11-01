@@ -5,7 +5,12 @@
  * and the Summary returned by the shared module bench-data.js. Keep them in sync.
  */
 
-/** @typedef {'github'|'codemany'} Side */
+/**
+ * Who ran a job. 'github-private' (2026-11-01): GitHub's computer for private code, timed
+ * weekly in codemanyhq/bench-private (Linux only; see sources.mjs).
+ * @typedef {'github'|'github-private'|'codemany'} Side
+ */
+/** Whose code GitHub is running: private code pays by the minute, public code is free. @typedef {'private'|'public'} Code */
 /** @typedef {'cold'|'warm'} Mode */
 /** @typedef {'linux'|'macos'} Os */
 /** @typedef {'light'|'dark'} ThemeName */
@@ -69,12 +74,15 @@
  */
 
 /**
+ * One GitHub computer for one kind of code (2026-11-01: `code` added; the same label
+ * appears once per code, private first).
  * @typedef {object} GithubRunner
  * @property {string} label
+ * @property {Code} code
  * @property {string} cpu
  * @property {number} ramGB
  * @property {number} diskGB
- * @property {number} perMinuteUSD   private-repo price
+ * @property {number} perMinuteUSD   0 = free (public code)
  * @property {string} priceNote
  * @property {string} source
  * @property {string} specsSource
@@ -103,6 +111,7 @@
 /**
  * @typedef {object} Summary
  * @property {Mode} mode
+ * @property {Code} [code]   echoed only by a site module that knows about code (2026-11-01)
  * @property {number} windowDays
  * @property {string|null} updatedAt
  * @property {number} nights
@@ -110,10 +119,20 @@
  * @property {ProjectSummary[]} projects
  */
 
+/** @typedef {{ mode: Mode, code?: Code, days?: number, now?: Date }} SummarizeOptions */
+
+/** One summary per mode. @typedef {{ cold: Summary, warm: Summary }} ModePair */
+/**
+ * What the README draws (2026-11-01, see summaries.mjs).
+ * @typedef {object} Summaries
+ * @property {ModePair} main               charts + first table: private code when the module knows code
+ * @property {ModePair|null} publicCode    null with a site module that predates code support
+ */
+
 /**
  * The two shared modules served by codemany.com/benchmarks.
  * @typedef {object} DataModule
- * @property {(r: ResultsFile, p: Project[], h: Hardware, o: { mode: Mode, days?: number, now?: Date }) => Summary} summarize
+ * @property {(r: ResultsFile, p: Project[], h: Hardware, o: SummarizeOptions) => Summary} summarize
  * @property {(sec: number|null|undefined) => string} formatDuration
  * @property {(x: number|null|undefined) => string} formatSpeedup
  * @property {(usd: number|null|undefined) => string} formatUSD
@@ -124,6 +143,16 @@
  * @property {(p: ProjectSummary, o: { width: number, height?: number, theme: ThemeName }) => string} trendSVG
  */
 /** @typedef {{ data: DataModule, chart: ChartModule }} BenchModules */
+
+/**
+ * One repo + workflow the collector reads (2026-11-01, see sources.mjs).
+ * @typedef {object} BenchSource
+ * @property {string} repo        owner/name
+ * @property {string} workflow    workflow file name, e.g. bench.yml
+ * @property {string} token       bearer token used for this repo's API calls only
+ * @property {Side[]} sides       job sides this source may report
+ * @property {boolean} useRunId   whether BENCH_RUN_ID (a bench.yml run) applies
+ */
 
 /** GitHub REST shapes (only the fields we read). */
 /** @typedef {{ name: string, conclusion: string|null, started_at: string|null, completed_at: string|null }} ApiStep */
