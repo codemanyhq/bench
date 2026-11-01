@@ -11,8 +11,8 @@
       "priceUSD": null,
       "lifeYears": 3,
       "watts": null,
-      "buyUrl": null,
-      "buyNote": null
+      "buyUrl": "https://www.amazon.com/dp/B0DRVSK2T9",
+      "buyNote": "MINISFORUM UM870, 32 GB, 1 TB"
     },
     {
       "id": "codemany-mac-01",
@@ -25,8 +25,8 @@
       "priceUSD": null,
       "lifeYears": 3,
       "watts": null,
-      "buyUrl": "https://www.apple.com/mac-mini/",
-      "buyNote": "12-core chip, 16 GB memory, 256 GB disk"
+      "buyUrl": "https://www.amazon.com/dp/B0HGGJZ92H",
+      "buyNote": "M6, 16 GB, 256 GB"
     }
   ],
   "github": [

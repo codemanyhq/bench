@@ -25,40 +25,34 @@ export function projectsTable(projects) {
   );
 }
 
-/** "The computers": both sides, with buy links only where a real one is known. @param {Hardware} hw */
+/** "The computers", in plain words (2026-11-01): what is inside, and where to get ours. @param {Hardware} hw */
 export function computersTable(hw) {
   const ours = table(
-    ['Computer', 'Chip', 'Memory', 'Disk', 'Buy the same computer'],
+    ['Our computer', "What's inside", 'Get one'],
     hw.codemany.map((m) => [
       `${m.name} (${osName(m.os)})`,
-      m.cpu,
-      size(m.ramGB),
-      size(m.diskGB),
-      m.buyUrl ? `[Buy the same computer](${m.buyUrl})${m.buyNote ? ` · ${m.buyNote}` : ''}` : '—',
+      `${m.cores} cores, ${size(m.ramGB)} memory, ${size(m.diskGB)} disk`,
+      m.buyUrl ? `[Get one](${m.buyUrl})${m.buyNote ? ` (${m.buyNote})` : ''}` : '—',
     ]),
   );
   const theirs = table(
-    ['Computer', 'Chip', 'Memory', 'Disk', 'Price per minute*'],
+    ["GitHub's computer", "What's inside", 'Price per minute*'],
     hw.github.map((g) => [
       `\`${g.label}\` (${g.label.startsWith('macos') ? 'macOS' : 'Linux'})`,
-      g.cpu,
-      size(g.ramGB),
-      size(g.diskGB),
+      `${g.cpu}, ${size(g.ramGB)} memory`,
       `[$${g.perMinuteUSD}](${g.source})`,
     ]),
   );
   const asOf = hw.github[0]?.asOf ?? '';
-  const notes = hw.github.map((g) => `- \`${g.label}\`: ${g.priceNote}`).join('\n');
   return [
-    '**Codemany computers** — small machines you buy once and keep.',
+    'You buy a Codemany computer once and keep it.',
     '',
     ours,
     '',
-    '**GitHub computers** — cloud machines you rent by the minute.',
+    'You rent a GitHub computer by the minute.',
     '',
     theirs,
     '',
-    `\\* Private-repo prices, checked ${asOf}. Specs: [GitHub-hosted runners](${hw.github[0]?.specsSource ?? ''}).`,
-    notes,
+    `\\* For private code, checked ${asOf} ([GitHub's prices](${hw.github[0]?.source ?? ''})).`,
   ].join('\n');
 }

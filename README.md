@@ -1,127 +1,54 @@
 # Codemany Bench
 
-Every night we build the same open-source code on GitHub's cloud and on a small Codemany computer, and show you which one finishes first.
+Every night we build the same code twice: once on GitHub's computer, once on a small [Codemany](https://codemany.com) computer. **The shorter bar wins.**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="charts/speed-cold-dark.svg">
   <img alt="Build time from scratch: GitHub (black) vs Codemany (green)" src="charts/speed-cold-light.svg">
 </picture>
 
-## In one minute
+**Green is Codemany. Black is GitHub.** The full page is at **[codemany.com/benchmarks](https://codemany.com/benchmarks)**.
 
-- **Same code, same night, two computers.** Each project is built on GitHub and on Codemany.
-- **Green is Codemany** on a small computer you own. **Black is GitHub's** cloud computer.
-- **Every number links to the real run**, so you can check it yourself.
-
-## What is this?
-
-A public scoreboard for how fast code gets built.
-
-When you change code, a computer builds and checks it. That computer is called a *runner*.
-
-GitHub rents you runners in its cloud. [Codemany](https://codemany.com) lets you use a small computer you own instead.
-
-This repo times both, every night, in the open. The full page with prices is at **[codemany.com/benchmarks](https://codemany.com/benchmarks)**.
-
-## How we test
-
-Same code. Same night. Two computers.
-
-| Rule | What it means |
-| --- | --- |
-| Same code | Each project is pinned to one exact version (a *commit*). Both computers build that version. |
-| Same command | We run each project's own build command, copied from its own CI setup. |
-| Same tools | Both sides install the same Rust, Go and Node versions. Swift uses each computer's Xcode, printed in the run log. |
-| One stopwatch | We time one step called `build`. Setup is timed too, but separately. |
-| Same night | Both computers start at 03:17 UTC. |
-
-### Cold and warm
-
-Builds save files to go faster next time. These saved files are called a *cache*.
-
-| Mode | What it means |
-| --- | --- |
-| Cold (from scratch) | Every cache is thrown away first, on both computers. |
-| Warm (with saved caches) | Last night's caches are kept. GitHub downloads them from its cache service; Codemany still has them on its disk. |
-
-### Every assumption favours GitHub
-
-Whenever we had to pick, we picked what helps GitHub.
-
-| We assume | Why it helps GitHub |
-| --- | --- |
-| GitHub's speed = its free 4-CPU Linux runner | Private repos get a slower 2-CPU runner. |
-| GitHub's price = the cheaper 2-CPU rate, $0.006 a minute | The 4-CPU runner we time costs $0.012 a minute. |
-| Codemany builds run one at a time | Each gets the whole computer, but its waiting time includes the build before it. |
-| The headline is the `build` step only | GitHub's extra setup (downloading tools and caches) is left out. |
-
-### What we build
-
-<!-- projects:start -->
-| Project | Language | Computer | Build command | Exact commit |
-| --- | --- | --- | --- | --- |
-| [ripgrep](https://github.com/BurntSushi/ripgrep) | Rust | Linux | `cargo build --release` | [`91f5d22`](https://github.com/BurntSushi/ripgrep/commit/91f5d22ef48bde459d90a8c7dbeab416e97d0f2b) |
-| [Hugo](https://github.com/gohugoio/hugo) | Go | Linux | `go install` | [`8502b60`](https://github.com/gohugoio/hugo/commit/8502b60066b1059c0e24275ef8a3b642b1b2a10b) |
-| [react.dev](https://github.com/reactjs/react.dev) | Next.js | Linux | `yarn install --frozen-lockfile && next build` | [`0821e7d`](https://github.com/reactjs/react.dev/commit/0821e7d9428a6c58c922765b891bbffba9ed6249) |
-| [Excalidraw](https://github.com/excalidraw/excalidraw) | Docker | Linux | `docker build -t excalidraw .` | [`a758e93`](https://github.com/excalidraw/excalidraw/commit/a758e93d6a03e9f995973703cb886850a398a6d3) |
-| [SwiftLint](https://github.com/realm/SwiftLint) | Swift | macOS | `swift build -c release --product swiftlint` | [`ec4691d`](https://github.com/realm/SwiftLint/commit/ec4691d9e813a1d3358e82917326b56b0a71d3c9) |
-<!-- projects:end -->
-
-## The computers
-
-Two small Codemany computers race two GitHub cloud computers.
-
-<!-- computers:start -->
-**Codemany computers** — small machines you buy once and keep.
-
-| Computer | Chip | Memory | Disk | Buy the same computer |
-| --- | --- | --- | --- | --- |
-| Mini PC (Linux) | AMD Ryzen 7 8745H (8 cores / 16 threads) | 32 GB | 1 TB | — |
-| Mac mini (macOS) | Apple silicon, 12 cores (Mac18,5) | 16 GB | 256 GB | [Buy the same computer](https://www.apple.com/mac-mini/) · 12-core chip, 16 GB memory, 256 GB disk |
-
-**GitHub computers** — cloud machines you rent by the minute.
-
-| Computer | Chip | Memory | Disk | Price per minute* |
-| --- | --- | --- | --- | --- |
-| `ubuntu-latest` (Linux) | 4 vCPU (x64) | 16 GB | 14 GB | [$0.006](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
-| `macos-latest` (macOS) | 3 vCPU (Apple M1, arm64) | 7 GB | 14 GB | [$0.062](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
-
-\* Private-repo prices, checked 2026-10-30. Specs: [GitHub-hosted runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
-- `ubuntu-latest`: Priced at the cheaper 2-core Linux rate; speed is measured on the faster 4-core public-repo runner.
-- `macos-latest`: macOS 3-4 core rate.
-<!-- computers:end -->
-
-## Results
-
-A robot fills this in after every nightly run.
+## Who is faster?
 
 <!-- bench:start -->
-Median build time over the last 30 nights. Updated 2026-11-01.
+Time to build each project from scratch (the middle of the last 30 nights). Updated 2026-11-01.
 
-### From scratch (cold)
+| Project | GitHub | Codemany | Codemany is… | Check it |
+| --- | --- | --- | --- | --- |
+| ripgrep | 25s | 12s | **2.1× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144233) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144143) |
+| Hugo | 1m 03s | 30s | **2.1× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144376) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144243) |
+| react.dev | 1m 57s | 1m 15s | **1.6× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144258) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144116) |
+| Excalidraw | 1m 19s | — | not measured yet | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144334) |
+| SwiftLint | 12m 53s | 2m 56s | **4.4× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144319) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144121) |
 
-| Project | GitHub | Codemany | Result | GitHub price¹ | Latest runs |
-| --- | --- | --- | --- | --- | --- |
-| ripgrep | 25s | 12s | 2.1× faster | <$0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144233) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144143) |
-| Hugo | 1m 03s | 30s | 2.1× faster | $0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144376) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144243) |
-| react.dev | 1m 57s | 1m 15s | 1.6× faster | $0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144258) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144116) |
-| Excalidraw | 1m 19s | — | — | $0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144334) |
-| SwiftLint | 12m 53s | 2m 56s | 4.4× faster | $0.82 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144319) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144121) |
+<details>
+<summary><b>More numbers</b>: with saved files, prices, night by night</summary>
 
-### With saved caches (warm)
+### From scratch
+
+| Project | GitHub | Codemany | Result | GitHub price¹ |
+| --- | --- | --- | --- | --- |
+| ripgrep | 25s | 12s | 2.1× faster | <$0.01 |
+| Hugo | 1m 03s | 30s | 2.1× faster | $0.01 |
+| react.dev | 1m 57s | 1m 15s | 1.6× faster | $0.01 |
+| Excalidraw | 1m 19s | — | — | $0.01 |
+| SwiftLint | 12m 53s | 2m 56s | 4.4× faster | $0.82 |
+
+### With saved files from last night
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="charts/speed-warm-dark.svg">
-  <img alt="Build time with saved caches: GitHub vs Codemany" src="charts/speed-warm-light.svg">
+  <img alt="Build time with saved files: GitHub vs Codemany" src="charts/speed-warm-light.svg">
 </picture>
 
-| Project | GitHub | Codemany | Result | GitHub price¹ | Latest runs |
-| --- | --- | --- | --- | --- | --- |
-| ripgrep | 23s | 12s | 1.9× faster | <$0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144237) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144253) |
-| Hugo | 1m 19s | 29s | 2.7× faster | $0.01 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144332) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144198) |
-| react.dev | 2m 04s | 1m 14s | 1.7× faster | $0.02 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144299) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144172) |
-| Excalidraw | 2m 30s | — | — | $0.02 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144271) |
-| SwiftLint | 15m 58s | 4m 24s | 3.6× faster | $1.02 | [GitHub](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144255) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/41147860813/job/124377144025) |
+| Project | GitHub | Codemany | Result | GitHub price¹ |
+| --- | --- | --- | --- | --- |
+| ripgrep | 23s | 12s | 1.9× faster | <$0.01 |
+| Hugo | 1m 19s | 29s | 2.7× faster | $0.01 |
+| react.dev | 2m 04s | 1m 14s | 1.7× faster | $0.02 |
+| Excalidraw | 2m 30s | — | — | $0.02 |
+| SwiftLint | 15m 58s | 4m 24s | 3.6× faster | $1.02 |
 
 ### Night by night (from scratch)
 
@@ -160,36 +87,86 @@ Median build time over the last 30 nights. Updated 2026-11-01.
   <img alt="SwiftLint: build time per night" src="charts/trend-swiftlint-light.svg">
 </picture>
 
-¹ What one GitHub job would cost in a private repo, at the prices in [The computers](#the-computers).
+¹ What one GitHub build would cost for private code, at the prices in [The computers](#the-computers).
+
+</details>
 <!-- bench:end -->
 
-## Check it yourself
+## The computers
 
-Every number comes from a real GitHub Actions run you can open.
+<!-- computers:start -->
+You buy a Codemany computer once and keep it.
+
+| Our computer | What's inside | Get one |
+| --- | --- | --- |
+| Mini PC (Linux) | 8 cores, 32 GB memory, 1 TB disk | [Get one](https://www.amazon.com/dp/B0DRVSK2T9) (MINISFORUM UM870, 32 GB, 1 TB) |
+| Mac mini (macOS) | 12 cores, 16 GB memory, 256 GB disk | [Get one](https://www.amazon.com/dp/B0HGGJZ92H) (M6, 16 GB, 256 GB) |
+
+You rent a GitHub computer by the minute.
+
+| GitHub's computer | What's inside | Price per minute* |
+| --- | --- | --- |
+| `ubuntu-latest` (Linux) | 4 vCPU (x64), 16 GB memory | [$0.006](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
+| `macos-latest` (macOS) | 3 vCPU (Apple M1, arm64), 7 GB memory | [$0.062](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
+
+\* For private code, checked 2026-10-30 ([GitHub's prices](https://docs.github.com/en/billing/reference/actions-runner-pricing)).
+<!-- computers:end -->
+
+## Is it fair?
+
+Yes, and when we had to choose, we chose what helps GitHub.
+
+- **Same code.** Both computers build the exact same version of each project.
+- **Same steps.** Each project's own build command, the same tools on both sides.
+- **Same night.** Both start at 03:17 UTC.
+- **You can check.** Every time in the table links to the real run on GitHub.
+
+<details>
+<summary><b>How we test, in detail</b></summary>
+
+### What we build
+
+<!-- projects:start -->
+| Project | Language | Computer | Build command | Exact commit |
+| --- | --- | --- | --- | --- |
+| [ripgrep](https://github.com/BurntSushi/ripgrep) | Rust | Linux | `cargo build --release` | [`91f5d22`](https://github.com/BurntSushi/ripgrep/commit/91f5d22ef48bde459d90a8c7dbeab416e97d0f2b) |
+| [Hugo](https://github.com/gohugoio/hugo) | Go | Linux | `go install` | [`8502b60`](https://github.com/gohugoio/hugo/commit/8502b60066b1059c0e24275ef8a3b642b1b2a10b) |
+| [react.dev](https://github.com/reactjs/react.dev) | Next.js | Linux | `yarn install --frozen-lockfile && next build` | [`0821e7d`](https://github.com/reactjs/react.dev/commit/0821e7d9428a6c58c922765b891bbffba9ed6249) |
+| [Excalidraw](https://github.com/excalidraw/excalidraw) | Docker | Linux | `docker build -t excalidraw .` | [`a758e93`](https://github.com/excalidraw/excalidraw/commit/a758e93d6a03e9f995973703cb886850a398a6d3) |
+| [SwiftLint](https://github.com/realm/SwiftLint) | Swift | macOS | `swift build -c release --product swiftlint` | [`ec4691d`](https://github.com/realm/SwiftLint/commit/ec4691d9e813a1d3358e82917326b56b0a71d3c9) |
+<!-- projects:end -->
+
+### From scratch, and with saved files
+
+Builds keep files around to go faster next time (a *cache*).
+
+| How | What it means |
+| --- | --- |
+| From scratch | Every saved file is thrown away first, on both computers. |
+| With saved files | Last night's files are kept. GitHub downloads them; Codemany already has them. |
+
+### Every guess helps GitHub
+
+| We assume | Why it helps GitHub |
+| --- | --- |
+| GitHub's speed = its free 4-CPU Linux computer | Private code gets a slower 2-CPU one. |
+| GitHub's price = the cheaper 2-CPU rate | The 4-CPU computer we time costs twice as much. |
+| Codemany builds one project at a time | Its waiting time includes the build before it. |
+| We time only the `build` step | GitHub's extra setup (downloading tools and files) is left out. |
+
+### Check it yourself
 
 1. Open the [bench runs](https://github.com/codemanyhq/bench/actions/workflows/bench.yml).
-2. Pick a job. Its name says what it is, like `ripgrep · codemany · cold`.
-3. Open its `build` step. That step's time is the number in our tables.
+2. Pick a job, like `ripgrep · codemany · cold`.
+3. Open its `build` step. That time is the number in our table.
 
-The raw numbers live in [`data/results.json`](data/results.json). The script that reads them from GitHub is [`scripts/collect.mjs`](scripts/collect.mjs).
+The raw numbers are in [`data/results.json`](data/results.json); [`scripts/collect.mjs`](scripts/collect.mjs) reads them from GitHub. To run it yourself, fork this repo and connect a self-hosted runner with the labels `self-hosted`, `Linux` (or `macOS`) and `codemany`.
 
-### Run it again
+### Safety
 
-Maintainers press **Run workflow** on the [bench workflow](https://github.com/codemanyhq/bench/actions/workflows/bench.yml).
+This repo never runs code from strangers: it runs only on a timer or the **Run workflow** button, never on pull requests. Builds get a read-only token, the collector only commits `data/`, `charts/` and this README, and every outside action and project is pinned to an exact commit.
 
-To run it on your own computer, fork this repo and connect a self-hosted runner with the labels `self-hosted`, `Linux` (or `macOS`) and `codemany`. Until one connects, the Codemany jobs wait in line.
-
-## Safety
-
-This repo never runs code from strangers.
-
-| Rule | Why |
-| --- | --- |
-| It runs only on a timer or the **Run workflow** button | Pull requests could run anyone's code on our own computers, so they never start it. |
-| Build jobs get a read-only token | A build cannot change this repo. |
-| The collector only commits `data/`, `charts/` and this README | Results are the only thing that changes by itself. |
-| Every outside action is pinned to a full commit SHA | A SHA is a fingerprint, so nobody can swap the code behind it. |
-| Every project is pinned to a full commit SHA | Changing what we build takes a reviewed commit to [`data/projects.json`](data/projects.json). |
+</details>
 
 ## License
 
