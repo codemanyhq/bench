@@ -102,8 +102,8 @@ runs:
 
     # GitHub's image has an Android SDK in $ANDROID_HOME; a Codemany machine has none
     # and no sudo, so it gets one in a per-user folder (kept for later nights, outside
-    # $BENCH_CACHE). Both sides then install platform 37 here, before the stopwatch, so
-    # neither downloads it inside the measured build.
+    # $BENCH_CACHE). Both sides get platform-tools here; the Android Gradle plugin fetches
+    # the compile platform itself during the build, the same way on both sides.
     - name: android sdk folder (Codemany)
       if: inputs.lang == 'Android' && env.BENCH_SIDE == 'codemany'
       shell: bash
@@ -114,7 +114,8 @@ runs:
       if: inputs.lang == 'Android'
       uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
       with:
-        packages: 'platform-tools platforms;android-37'
+        packages: 'platform-tools'   # 2026-11-01: 'platforms;android-37' isn't in the SDK repo; the Android Gradle plugin
+                                       # fetches the platform the project needs itself (as its own CI does), on both sides alike
         log-accepted-android-sdk-licenses: false
 
     # 2026-11-01: the same CMake and Ninja on both sides, in user space (no sudo).
