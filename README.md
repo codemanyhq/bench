@@ -29,10 +29,10 @@ Time to build each project from scratch (the middle of the last 30 nights). Upda
 
 | Project | GitHub | Codemany | Result | GitHub price¹ |
 | --- | --- | --- | --- | --- |
-| ripgrep | 25s | 12s | 2.1× faster | <$0.01 |
-| Hugo | 1m 03s | 30s | 2.1× faster | $0.01 |
-| react.dev | 1m 57s | 1m 15s | 1.6× faster | $0.01 |
-| Excalidraw | 1m 19s | — | — | $0.01 |
+| ripgrep | 25s | 12s | 2.1× faster | $0.01 |
+| Hugo | 1m 03s | 30s | 2.1× faster | $0.02 |
+| react.dev | 1m 57s | 1m 15s | 1.6× faster | $0.03 |
+| Excalidraw | 1m 19s | — | — | $0.02 |
 | SwiftLint | 12m 53s | 2m 56s | 4.4× faster | $0.82 |
 
 ### With saved files from last night
@@ -44,10 +44,10 @@ Time to build each project from scratch (the middle of the last 30 nights). Upda
 
 | Project | GitHub | Codemany | Result | GitHub price¹ |
 | --- | --- | --- | --- | --- |
-| ripgrep | 23s | 12s | 1.9× faster | <$0.01 |
-| Hugo | 1m 19s | 29s | 2.7× faster | $0.01 |
-| react.dev | 2m 04s | 1m 14s | 1.7× faster | $0.02 |
-| Excalidraw | 2m 30s | — | — | $0.02 |
+| ripgrep | 23s | 12s | 1.9× faster | $0.01 |
+| Hugo | 1m 19s | 29s | 2.7× faster | $0.02 |
+| react.dev | 2m 04s | 1m 14s | 1.7× faster | $0.03 |
+| Excalidraw | 2m 30s | — | — | $0.04 |
 | SwiftLint | 15m 58s | 4m 24s | 3.6× faster | $1.02 |
 
 ### Night by night (from scratch)
@@ -106,10 +106,10 @@ You rent a GitHub computer by the minute.
 
 | GitHub's computer | What's inside | Price per minute* |
 | --- | --- | --- |
-| `ubuntu-latest` (Linux) | 4 vCPU (x64), 16 GB memory | [$0.006](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
+| `ubuntu-latest` (Linux) | 4 vCPU (x64), 16 GB memory | [$0.012](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
 | `macos-latest` (macOS) | 3 vCPU (Apple M1, arm64), 7 GB memory | [$0.062](https://docs.github.com/en/billing/reference/actions-runner-pricing) |
 
-\* For private code, checked 2026-10-30 ([GitHub's prices](https://docs.github.com/en/billing/reference/actions-runner-pricing)).
+\* For private code, checked 2026-11-01 ([GitHub's prices](https://docs.github.com/en/billing/reference/actions-runner-pricing)).
 <!-- computers:end -->
 
 ## Is it fair?
@@ -158,7 +158,6 @@ Builds keep files around to go faster next time (a *cache*).
 | We assume | Why it helps GitHub |
 | --- | --- |
 | GitHub's speed = its free 4-CPU Linux computer | Private code gets a slower 2-CPU one. |
-| GitHub's price = the cheaper 2-CPU rate | The 4-CPU computer we time costs twice as much. |
 | Codemany builds one project at a time | Its waiting time includes the build before it. |
 | We time only the `build` step | GitHub's extra setup (downloading tools and files) is left out. |
 
