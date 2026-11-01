@@ -35,11 +35,11 @@
       "cpu": "4 vCPU (x64)",
       "ramGB": 16,
       "diskGB": 14,
-      "perMinuteUSD": 0.006,
-      "priceNote": "Priced at the cheaper 2-core Linux rate; speed is measured on the faster 4-core public-repo runner.",
+      "perMinuteUSD": 0.012,
+      "priceNote": "Priced at the 4-core Linux rate: the runner we time (2026-11-01).",
       "source": "https://docs.github.com/en/billing/reference/actions-runner-pricing",
       "specsSource": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
-      "asOf": "2026-10-30"
+      "asOf": "2026-11-01"
     },
     {
       "label": "macos-latest",
