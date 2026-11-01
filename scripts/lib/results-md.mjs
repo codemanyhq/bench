@@ -20,17 +20,30 @@ function proof(p) {
   return links.join(' · ') || '—';
 }
 
-/** @param {Summary} s @param {DataModule} fmt */
+/** The one table most readers need (2026-11-01): who is faster, and by how much. @param {Summary} s @param {DataModule} fmt */
+function simpleTable(s, fmt) {
+  return table(
+    ['Project', 'GitHub', 'Codemany', 'Codemany is…', 'Check it'],
+    s.projects.map((p) => [
+      p.name,
+      fmt.formatDuration(p.github?.medianSec),
+      fmt.formatDuration(p.codemany?.medianSec),
+      p.speedup == null ? 'not measured yet' : `**${fmt.formatSpeedup(p.speedup)}**`,
+      proof(p),
+    ]),
+  );
+}
+
+/** The fuller table, under "More numbers". @param {Summary} s @param {DataModule} fmt */
 function modeTable(s, fmt) {
   return table(
-    ['Project', 'GitHub', 'Codemany', 'Result', 'GitHub price¹', 'Latest runs'],
+    ['Project', 'GitHub', 'Codemany', 'Result', 'GitHub price¹'],
     s.projects.map((p) => [
       p.name,
       fmt.formatDuration(p.github?.medianSec),
       fmt.formatDuration(p.codemany?.medianSec),
       p.speedup == null ? '—' : fmt.formatSpeedup(p.speedup),
       fmt.formatUSD(p.githubCostUSD),
-      proof(p),
     ]),
   );
 }
@@ -42,21 +55,28 @@ export function resultsBlock(cold, warm, fmt) {
     .filter((p) => p.trend.length > 0)
     .flatMap((p) => [`**${p.name}**`, '', picture(`charts/trend-${p.id}`, `${p.name}: build time per night`), '']);
   return [
-    `Median build time over the last ${cold.windowDays} nights. Updated ${updated}.`,
+    `Time to build each project from scratch (the middle of the last ${cold.windowDays} nights). Updated ${updated}.`,
     '',
-    '### From scratch (cold)',
+    simpleTable(cold, fmt),
+    '',
+    '<details>',
+    '<summary><b>More numbers</b>: with saved files, prices, night by night</summary>',
+    '',
+    '### From scratch',
     '',
     modeTable(cold, fmt),
     '',
-    '### With saved caches (warm)',
+    '### With saved files from last night',
     '',
-    picture('charts/speed-warm', 'Build time with saved caches: GitHub vs Codemany'),
+    picture('charts/speed-warm', 'Build time with saved files: GitHub vs Codemany'),
     '',
     modeTable(warm, fmt),
     '',
     '### Night by night (from scratch)',
     '',
     ...trends,
-    '¹ What one GitHub job would cost in a private repo, at the prices in [The computers](#the-computers).',
+    '¹ What one GitHub build would cost for private code, at the prices in [The computers](#the-computers).',
+    '',
+    '</details>',
   ].join('\n');
 }
