@@ -66,7 +66,9 @@ jobs:
   github-cold:
     name: ${{ matrix.project }} · github · ${{ matrix.mode }}
     needs: plan
-    runs-on: ${{ matrix.os == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+    # 2026-11-02: macos-26 (not -latest): its default Xcode is 26.6, the one every Mac job
+    # pins below, so the image can't move under the bench.
+    runs-on: ${{ matrix.os == 'macos' && 'macos-26' || 'ubuntu-latest' }}
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -76,6 +78,8 @@ jobs:
       BENCH_PROJECT: ${{ matrix.project }}
       BENCH_MODE: ${{ matrix.mode }}
       BENCH_SIDE: github
+      # 2026-11-02: the same Xcode as the codemany-macos job (see there); empty on Linux.
+      DEVELOPER_DIR: ${{ matrix.os == 'macos' && '/Applications/Xcode_26.6.app/Contents/Developer' || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -116,7 +120,9 @@ jobs:
     permissions:
       contents: read
       actions: write   # delete the restored cache entry (prepare)
-    runs-on: ${{ matrix.os == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+    # 2026-11-02: macos-26 (not -latest): its default Xcode is 26.6, the one every Mac job
+    # pins below, so the image can't move under the bench.
+    runs-on: ${{ matrix.os == 'macos' && 'macos-26' || 'ubuntu-latest' }}
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -126,6 +132,8 @@ jobs:
       BENCH_PROJECT: ${{ matrix.project }}
       BENCH_MODE: ${{ matrix.mode }}
       BENCH_SIDE: github
+      # 2026-11-02: the same Xcode as the codemany-macos job (see there); empty on Linux.
+      DEVELOPER_DIR: ${{ matrix.os == 'macos' && '/Applications/Xcode_26.6.app/Contents/Developer' || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -229,6 +237,11 @@ jobs:
       BENCH_PROJECT: ${{ matrix.project }}
       BENCH_MODE: ${{ matrix.mode }}
       BENCH_SIDE: codemany
+      # 2026-11-02: ONE Xcode on both sides, 26.6 (GitHub macos-26's default). TCA's
+      # packages don't resolve on Xcode 27, so 27 can't be the shared version. Written
+      # out in full on purpose: Codemany's workflow scan reads this path and gets that
+      # Xcode onto its Macs itself (from a Mac that has it, our own copy, or Apple).
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
