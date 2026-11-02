@@ -33,6 +33,7 @@
  * @property {number} jobSec         started → completed
  * @property {number|null} buildSec  the `build` step; null when it did not succeed
  * @property {Conclusion} conclusion
+ * @property {boolean|null} [cacheHit]  warm only: was last night's cache restored? null = cold or unknown (2026-11-02)
  */
 
 /**
@@ -106,6 +107,7 @@
  * @property {number|null} githubCostUSD
  * @property {number|null} codemanyCostUSD
  * @property {TrendPoint[]} trend
+ * @property {boolean} [warmingUp]  set here, not by the site module: warm comparison lacks a restored cache (2026-11-02)
  */
 
 /**

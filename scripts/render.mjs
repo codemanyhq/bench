@@ -63,6 +63,9 @@ function draw(m, d) {
   for (const theme of THEMES) {
     if (hasNumbers(cold)) files.set(`speed-cold-${theme}.svg`, m.chart.barsSVG(cold, { width: WIDTH, theme }));
     if (hasNumbers(warm)) files.set(`speed-warm-${theme}.svg`, m.chart.barsSVG(warm, { width: WIDTH, theme }));
+    // 2026-11-02: no warm pair with restored caches on both sides yet (lib/warm-gate.mjs).
+    else if (warm.projects.some((p) => p.warmingUp)) files.set(`speed-warm-${theme}.svg`, placeholderSVG(theme,
+      'Warming up: saved files arrive after the next nightly run', 'Warm builds count only when last night\'s cache was restored'));
     for (const p of cold.projects.filter((x) => x.trend.length > 0)) {
       files.set(`trend-${p.id}-${theme}.svg`, m.chart.trendSVG(p, { width: WIDTH, height: 220, theme }));
     }

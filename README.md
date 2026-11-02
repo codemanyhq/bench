@@ -46,11 +46,11 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 
 | Project | GitHub | Codemany | Result | GitHub price¹ |
 | --- | --- | --- | --- | --- |
-| ripgrep | 30s | 14s | 2.2× faster | $0.01 |
-| Hugo | 51s | 33s | 1.5× faster | $0.01 |
-| react.dev | 2m 34s | 2m 13s | 1.2× faster | $0.02 |
-| Excalidraw | 2m 30s | 2m 28s | about the same | $0.02 |
-| SwiftLint | 12m 00s | 6m 06s | 2.0× faster | $0.77 |
+| ripgrep | — | — | warming up | — |
+| Hugo | — | — | warming up | — |
+| react.dev | — | — | warming up | — |
+| Excalidraw | — | — | warming up | — |
+| SwiftLint | — | — | warming up | — |
 
 ### Public code (free on GitHub), from scratch
 
@@ -66,11 +66,11 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 
 | Project | GitHub | Codemany | Result |
 | --- | --- | --- | --- |
-| ripgrep | 16s | 14s | 1.2× faster |
-| Hugo | 41s | 33s | 1.2× faster |
-| react.dev | 1m 34s | 2m 13s | 1.4× slower |
-| Excalidraw | 1m 42s | 2m 28s | 1.5× slower |
-| SwiftLint | 12m 00s | 6m 06s | 2.0× faster |
+| ripgrep | — | — | warming up |
+| Hugo | — | — | warming up |
+| react.dev | — | — | warming up |
+| Excalidraw | — | — | warming up |
+| SwiftLint | — | — | warming up |
 
 ### Night by night (private code, from scratch)
 
