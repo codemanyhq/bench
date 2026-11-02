@@ -35,7 +35,7 @@ export function simpleTable(s, fmt, view) {
       p.name,
       view.githubTime(p),
       fmt.formatDuration(p.codemany?.medianSec),
-      p.speedup == null ? 'not measured yet' : `**${fmt.formatSpeedup(p.speedup)}**`,
+      p.warmingUp ? 'warming up' : p.speedup == null ? 'not measured yet' : `**${fmt.formatSpeedup(p.speedup)}**`,
       view.proof(p),
     ]),
   );
@@ -48,7 +48,7 @@ export function modeTable(s, fmt, view) {
     view.price ? [...head, 'GitHub price¹'] : head,
     s.projects.map((p) => {
       const cells = [p.name, view.githubTime(p), fmt.formatDuration(p.codemany?.medianSec),
-        p.speedup == null ? '—' : fmt.formatSpeedup(p.speedup)];
+        p.warmingUp ? 'warming up' : p.speedup == null ? '—' : fmt.formatSpeedup(p.speedup)];
       return view.price ? [...cells, fmt.formatUSD(p.githubCostUSD)] : cells;
     }),
   );

@@ -10,6 +10,7 @@
 # build gets the whole machine, exactly like a fresh GitHub VM does.
 # Every bench job has ONE step named `build`: that step's time is the headline number
 # (scripts/collect.mjs reads it). Job names are `<project> · <side> · <mode>`.
+# A warm job counts only if its `cache hit` step ran (2026-11-02, scripts/lib/cache-hit.mjs).
 name: bench
 
 on:
@@ -65,6 +66,11 @@ jobs:
           sha: ${{ matrix.sha }}
           lang: ${{ matrix.lang }}
           toolchain: ${{ matrix.toolchain }}
+      # 2026-11-02: marker for scripts/lib/cache-hit.mjs: this step runs (success) only when
+      # a warm job really restored last night's cache; skipped = no restore, not "warm".
+      - name: cache hit
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
+        run: echo "restored $BENCH_CACHE_KEY"
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
@@ -111,6 +117,11 @@ jobs:
           sha: ${{ matrix.sha }}
           lang: ${{ matrix.lang }}
           toolchain: ${{ matrix.toolchain }}
+      # 2026-11-02: marker for scripts/lib/cache-hit.mjs: this step runs (success) only when
+      # a warm job really restored last night's cache; skipped = no restore, not "warm".
+      - name: cache hit
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
+        run: echo "restored $BENCH_CACHE_KEY"
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
@@ -152,6 +163,11 @@ jobs:
           sha: ${{ matrix.sha }}
           lang: ${{ matrix.lang }}
           toolchain: ${{ matrix.toolchain }}
+      # 2026-11-02: marker for scripts/lib/cache-hit.mjs: this step runs (success) only when
+      # a warm job really restored last night's cache; skipped = no restore, not "warm".
+      - name: cache hit
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
+        run: echo "restored $BENCH_CACHE_KEY"
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh

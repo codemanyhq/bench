@@ -1,5 +1,6 @@
 // @ts-check
-/** Turns one GitHub job into one results.json row (2026-10-30). */
+/** Turns one GitHub job into one results.json row (2026-10-30; cacheHit 2026-11-02). */
+import { cacheHitOf } from './cache-hit.mjs';
 
 /** @typedef {import('./types.mjs').ApiJob} ApiJob */
 /** @typedef {import('./types.mjs').ApiRun} ApiRun */
@@ -62,5 +63,6 @@ export function toRow(run, job, projects) {
     jobSec: seconds(job.started_at, job.completed_at),
     buildSec: buildSeconds(job),
     conclusion: /** @type {Conclusion} */ (job.conclusion),
+    cacheHit: cacheHitOf(job, name.side, name.mode),
   };
 }
