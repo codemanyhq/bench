@@ -16,7 +16,7 @@ if [[ "${BENCH_MODE:-}" == cold && -n "${RUNNER_TEMP:-}" && "${BENCH_CACHE:-}" =
 fi
 # 2026-11-02: per run (env.sh), the folder is saved/restored through GitHub's cache and
 # emptied before every use, so nothing on disk is reused: free it in both modes.
-if [[ "${BENCH_CACHE_SCOPE:-}" == run && -n "${HOME:-}" && "${BENCH_CACHE:-}" == "$HOME/.cache/codemany-bench/"?* ]]; then
+if [[ "${BENCH_CACHE_SCOPE:-}" == run && "${BENCH_CACHE:-}" == "$GITHUB_WORKSPACE/.bench-cache/"?* ]]; then
   chmod -R u+w "$BENCH_CACHE" 2>/dev/null
   rm -rf "$BENCH_CACHE"
 fi
