@@ -114,6 +114,13 @@ jobs:
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
+      # Warm only: keep tonight's caches for tomorrow, the same way as the GitHub side.
+      - name: save cache
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.BENCH_CACHE }}
+          key: ${{ env.BENCH_CACHE_KEY }}
       - name: cleanup
         if: always()
         run: bash bench/scripts/cleanup.sh
@@ -148,6 +155,13 @@ jobs:
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
+      # Warm only: keep tonight's caches for tomorrow, the same way as the GitHub side.
+      - name: save cache
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.BENCH_CACHE }}
+          key: ${{ env.BENCH_CACHE_KEY }}
       - name: cleanup
         if: always()
         run: bash bench/scripts/cleanup.sh

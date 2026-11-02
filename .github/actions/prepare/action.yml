@@ -2,8 +2,9 @@
 # 1. fresh checkout of the pinned project into ./src (fresh files on BOTH sides)
 # 2. the same toolchain version on both sides
 # 3. every cache pointed at ONE folder, $BENCH_CACHE (scripts/env.sh):
-#    cold → an empty folder; warm → yesterday's folder (GitHub: restored from its
-#    cache service; Codemany: still on the machine's disk).
+#    cold → an empty folder; warm → yesterday's folder, restored from GitHub's cache
+#    service on both sides (2026-11-02: a public repo's Codemany job runs on a wiped
+#    machine, so nothing from last night is on its disk; see scripts/env.sh).
 # Reads BENCH_PROJECT / BENCH_MODE / BENCH_SIDE from the job env.
 name: prepare
 description: Check out a pinned project, set up its toolchain and wire its caches.
@@ -136,14 +137,14 @@ runs:
 
     - name: restore cache
       id: restore
-      if: env.BENCH_SIDE == 'github' && env.BENCH_MODE == 'warm'
+      if: env.BENCH_MODE == 'warm'
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ env.BENCH_CACHE }}
         key: ${{ env.BENCH_CACHE_KEY }}
 
     - name: remember cache hit
-      if: env.BENCH_SIDE == 'github' && env.BENCH_MODE == 'warm'
+      if: env.BENCH_MODE == 'warm'
       shell: bash
       env:
         HIT: ${{ steps.restore.outputs.cache-hit }}

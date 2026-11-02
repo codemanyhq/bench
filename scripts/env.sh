@@ -2,8 +2,10 @@
 # Points every cache of one project at ONE folder, $BENCH_CACHE, and exports it to the
 # next steps through $GITHUB_ENV (2026-10-30).
 #   cold: $RUNNER_TEMP/bench-cache, emptied now and deleted by cleanup.sh (both sides).
-#   warm: $HOME/.cache/codemany-bench/<project>. GitHub restores it from actions/cache;
-#         a Codemany machine simply still has it on disk from last night.
+#   warm: $HOME/.cache/codemany-bench/<project>, restored from actions/cache on BOTH sides.
+#         2026-11-02: the bench repo is public, and Codemany runs a public repo's job on a
+#         fresh, wiped machine (its "public twin"), so last night's folder is never on disk.
+#         Each side keeps its own key: Codemany never builds with files GitHub saved.
 # Same folder layout on both sides, so cold vs warm is the only difference that matters.
 # Inputs (env): BENCH_PROJECT BENCH_MODE BENCH_LANG BENCH_SHA BENCH_TOOLCHAIN
 set -euo pipefail
@@ -19,7 +21,8 @@ case "$BENCH_MODE" in
 esac
 mkdir -p "$cache"
 put BENCH_CACHE "$cache"
-put BENCH_CACHE_KEY "bench-v1-$BENCH_PROJECT-$BENCH_SHA-$RUNNER_OS-$RUNNER_ARCH"
+prefix="bench-v1"; [[ "${BENCH_SIDE:-}" == codemany ]] && prefix="bench-v1-codemany"
+put BENCH_CACHE_KEY "$prefix-$BENCH_PROJECT-$BENCH_SHA-$RUNNER_OS-$RUNNER_ARCH"
 put BENCH_SCRIPTS "$GITHUB_WORKSPACE/bench/scripts"
 
 case "$BENCH_LANG" in
