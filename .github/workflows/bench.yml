@@ -105,7 +105,7 @@ jobs:
         if: matrix.mode == 'cold'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ env.BENCH_CACHE }}
+          path: ${{ env.BENCH_CACHE_PATH }}   # relative per run (scripts/env.sh)
           key: ${{ env.BENCH_CACHE_KEY }}
       - name: cleanup
         if: always()
@@ -159,7 +159,7 @@ jobs:
         if: matrix.mode == 'cold'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ env.BENCH_CACHE }}
+          path: ${{ env.BENCH_CACHE_PATH }}   # relative per run (scripts/env.sh)
           key: ${{ env.BENCH_CACHE_KEY }}
       - name: cleanup
         if: always()
@@ -213,7 +213,7 @@ jobs:
         if: matrix.mode == 'cold'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ env.BENCH_CACHE }}
+          path: ${{ env.BENCH_CACHE_PATH }}   # relative per run (scripts/env.sh)
           key: ${{ env.BENCH_CACHE_KEY }}
       - name: cleanup
         if: always()
@@ -267,7 +267,7 @@ jobs:
         if: matrix.mode == 'cold'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ env.BENCH_CACHE }}
+          path: ${{ env.BENCH_CACHE_PATH }}   # relative per run (scripts/env.sh)
           key: ${{ env.BENCH_CACHE_KEY }}
       - name: cleanup
         if: always()

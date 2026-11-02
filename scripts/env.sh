@@ -14,6 +14,11 @@
 # pushed each other out and warm jobs missed (run 41507481012: Now in Android). Then:
 #   - cold and warm use the SAME folder: actions/cache only matches a save made with
 #     the same path, and a cold save from $RUNNER_TEMP never matched a warm restore;
+#   - that folder is inside the workspace and actions/cache gets it as a RELATIVE path
+#     ($BENCH_CACHE_PATH): a Codemany public job runs in a job VM (HOME=/home/runner) or
+#     as a slot user (HOME=/var/lib/codemany/slots/<user>), and an absolute $HOME path
+#     changed the entry's version, so the save never matched (run 41523326203: Now in
+#     Android cold in a VM, warm as _codemany10);
 #   - the folder is emptied first in both modes, so warm only ever has restored files;
 #   - the key carries the run id, so every run saves fresh keys (no "another job may be
 #     creating this cache" clash with an older run's entry).
@@ -26,17 +31,22 @@ src="${GITHUB_WORKSPACE:?}/src"
 
 per_run=false; [[ "${BENCH_CACHE_SCOPE:-}" == run ]] && per_run=true
 case "$BENCH_MODE" in
-  cold) cache="${RUNNER_TEMP:?}/bench-cache"
-        $per_run && cache="$HOME/.cache/codemany-bench/$BENCH_PROJECT" ;;
+  cold) cache="${RUNNER_TEMP:?}/bench-cache" ;;
   warm) cache="$HOME/.cache/codemany-bench/$BENCH_PROJECT" ;;
   *)    echo "::error::unknown mode '$BENCH_MODE'"; exit 1 ;;
 esac
+cache_path="$cache"                        # what actions/cache is given
+if $per_run; then
+  cache_path=".bench-cache/$BENCH_PROJECT" # relative to $GITHUB_WORKSPACE
+  cache="$GITHUB_WORKSPACE/$cache_path"
+fi
 # Empty it first: cold always, warm too per run (only restored files may be in it).
 if [[ "$BENCH_MODE" == cold ]] || $per_run; then
   if [[ -d "$cache" ]]; then chmod -R u+w "$cache"; rm -rf "$cache"; fi
 fi
 mkdir -p "$cache"
 put BENCH_CACHE "$cache"
+put BENCH_CACHE_PATH "$cache_path"
 side="${BENCH_SIDE:-github}"
 if $per_run; then
   put BENCH_CACHE_KEY "bench-run-$side-$BENCH_PROJECT-$BENCH_SHA-$RUNNER_OS-$RUNNER_ARCH-${GITHUB_RUN_ID:?}"
