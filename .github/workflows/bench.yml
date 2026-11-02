@@ -5,12 +5,19 @@
 # and `workflow_dispatch`. Never add pull_request / pull_request_target / issue_comment /
 # push-from-fork triggers: they would let anyone run code on the Codemany machines.
 #
-# Shape: `plan` turns data/projects.json into matrices, then three bench jobs run
-# project × mode. Codemany jobs run one at a time (max-parallel: 1) so every measured
+# Shape: `plan` turns data/projects.json into matrices, then four bench jobs run
+# project × mode (GitHub: cold, then warm). Codemany jobs run one at a time (max-parallel: 1) so every measured
 # build gets the whole machine, exactly like a fresh GitHub VM does.
 # Every bench job has ONE step named `build`: that step's time is the headline number
 # (scripts/collect.mjs reads it). Job names are `<project> · <side> · <mode>`.
 # A warm job counts only if its `cache hit` step ran (2026-11-02, scripts/lib/cache-hit.mjs).
+#
+# Saved files (2026-11-02, BENCH_CACHE_SCOPE=run, scripts/env.sh): each project's cold job
+# saves its cache folder to GitHub's cache service; its warm job in the SAME run restores
+# it, deletes the entry and builds. Same on both sides. Nightly keys for both sides
+# (~14 GB) overflowed GitHub's 10 GB per repo and pushed each other out, so warm jobs
+# missed. GitHub's warm jobs wait for all its cold jobs; on Codemany (one job at a time)
+# each project's cold job runs right before its warm one (scripts/plan.sh order).
 name: bench
 
 on:
@@ -21,6 +28,9 @@ on:
 permissions:
   contents: read
 
+env:
+  BENCH_CACHE_SCOPE: run
+
 concurrency:
   group: bench
   cancel-in-progress: false
@@ -30,8 +40,12 @@ jobs:
     name: plan
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write   # sweep old cache entries
     outputs:
-      github: ${{ steps.plan.outputs.github }}
+      github_cold: ${{ steps.plan.outputs.github_cold }}
+      github_warm: ${{ steps.plan.outputs.github_warm }}
       linux: ${{ steps.plan.outputs.linux }}
       macos: ${{ steps.plan.outputs.macos }}
     steps:
@@ -40,8 +54,16 @@ jobs:
           persist-credentials: false
       - id: plan
         run: bash scripts/plan.sh data/projects.json >> "$GITHUB_OUTPUT"
+      # 2026-11-02: start every run with an empty cache (only one bench run at a time:
+      # `concurrency`). Removes leftovers of failed runs and the old nightly entries.
+      - name: sweep caches
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh cache list -R "$GITHUB_REPOSITORY" --key bench- --limit 1000 --json key --jq '.[].key' |
+            while IFS= read -r key; do gh cache delete -R "$GITHUB_REPOSITORY" "$key" || true; done
 
-  github:
+  github-cold:
     name: ${{ matrix.project }} · github · ${{ matrix.mode }}
     needs: plan
     runs-on: ${{ matrix.os == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
@@ -49,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.github) }}
+        include: ${{ fromJSON(needs.plan.outputs.github_cold) }}
     env:
       BENCH_PROJECT: ${{ matrix.project }}
       BENCH_MODE: ${{ matrix.mode }}
@@ -67,16 +89,66 @@ jobs:
           lang: ${{ matrix.lang }}
           toolchain: ${{ matrix.toolchain }}
       # 2026-11-02: marker for scripts/lib/cache-hit.mjs: this step runs (success) only when
-      # a warm job really restored last night's cache; skipped = no restore, not "warm".
+      # a warm job really restored its cold job's cache; skipped = no restore, not "warm".
       - name: cache hit
         if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
         run: echo "restored $BENCH_CACHE_KEY"
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
-      # Warm only: keep tonight's caches for tomorrow (GitHub's cache service).
+      # Cold only (2026-11-02): save for this run's warm job (GitHub's cache service).
       - name: save cache
-        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT != 'true'
+        if: matrix.mode == 'cold'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.BENCH_CACHE }}
+          key: ${{ env.BENCH_CACHE_KEY }}
+      - name: cleanup
+        if: always()
+        run: bash bench/scripts/cleanup.sh
+
+  github-warm:
+    name: ${{ matrix.project }} · github · ${{ matrix.mode }}
+    # Restores the saves of github-cold; runs even when some cold jobs failed (their warm
+    # jobs then miss and do not count).
+    needs: [plan, github-cold]
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    permissions:
+      contents: read
+      actions: write   # delete the restored cache entry (prepare)
+    runs-on: ${{ matrix.os == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.github_warm) }}
+    env:
+      BENCH_PROJECT: ${{ matrix.project }}
+      BENCH_MODE: ${{ matrix.mode }}
+      BENCH_SIDE: github
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: bench
+          persist-credentials: false
+      - name: prepare
+        uses: ./bench/.github/actions/prepare
+        with:
+          repo: ${{ matrix.repo }}
+          sha: ${{ matrix.sha }}
+          lang: ${{ matrix.lang }}
+          toolchain: ${{ matrix.toolchain }}
+      # 2026-11-02: marker for scripts/lib/cache-hit.mjs: this step runs (success) only when
+      # a warm job really restored its cold job's cache; skipped = no restore, not "warm".
+      - name: cache hit
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
+        run: echo "restored $BENCH_CACHE_KEY"
+      - name: build
+        working-directory: src
+        run: bash ../bench/scripts/build.sh
+      # Cold only (2026-11-02): save for this run's warm job (GitHub's cache service).
+      - name: save cache
+        if: matrix.mode == 'cold'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.BENCH_CACHE }}
@@ -90,6 +162,9 @@ jobs:
     needs: plan
     if: needs.plan.outputs.linux != '[]'
     runs-on: [self-hosted, Linux, codemany]
+    permissions:
+      contents: read
+      actions: write   # delete the restored cache entry (prepare)
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -118,16 +193,16 @@ jobs:
           lang: ${{ matrix.lang }}
           toolchain: ${{ matrix.toolchain }}
       # 2026-11-02: marker for scripts/lib/cache-hit.mjs: this step runs (success) only when
-      # a warm job really restored last night's cache; skipped = no restore, not "warm".
+      # a warm job really restored its cold job's cache; skipped = no restore, not "warm".
       - name: cache hit
         if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
         run: echo "restored $BENCH_CACHE_KEY"
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
-      # Warm only: keep tonight's caches for tomorrow, the same way as the GitHub side.
+      # Cold only (2026-11-02): save for this run's warm job, the same way as the GitHub side.
       - name: save cache
-        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT != 'true'
+        if: matrix.mode == 'cold'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.BENCH_CACHE }}
@@ -141,6 +216,9 @@ jobs:
     needs: plan
     if: needs.plan.outputs.macos != '[]'
     runs-on: [self-hosted, macOS, codemany]
+    permissions:
+      contents: read
+      actions: write   # delete the restored cache entry (prepare)
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -164,16 +242,16 @@ jobs:
           lang: ${{ matrix.lang }}
           toolchain: ${{ matrix.toolchain }}
       # 2026-11-02: marker for scripts/lib/cache-hit.mjs: this step runs (success) only when
-      # a warm job really restored last night's cache; skipped = no restore, not "warm".
+      # a warm job really restored its cold job's cache; skipped = no restore, not "warm".
       - name: cache hit
         if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
         run: echo "restored $BENCH_CACHE_KEY"
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
-      # Warm only: keep tonight's caches for tomorrow, the same way as the GitHub side.
+      # Cold only (2026-11-02): save for this run's warm job, the same way as the GitHub side.
       - name: save cache
-        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT != 'true'
+        if: matrix.mode == 'cold'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.BENCH_CACHE }}

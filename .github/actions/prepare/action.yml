@@ -2,9 +2,11 @@
 # 1. fresh checkout of the pinned project into ./src (fresh files on BOTH sides)
 # 2. the same toolchain version on both sides
 # 3. every cache pointed at ONE folder, $BENCH_CACHE (scripts/env.sh):
-#    cold → an empty folder; warm → yesterday's folder, restored from GitHub's cache
+#    cold → an empty folder; warm → the saved folder, restored from GitHub's cache
 #    service on both sides (2026-11-02: a public repo's Codemany job runs on a wiped
-#    machine, so nothing from last night is on its disk; see scripts/env.sh).
+#    machine, so nothing from an earlier job is on its disk; see scripts/env.sh).
+#    bench.yml (BENCH_CACHE_SCOPE=run): the cold job of the same run saved it, and the
+#    warm job deletes the entry once restored, so both sides fit GitHub's 10 GB.
 # Reads BENCH_PROJECT / BENCH_MODE / BENCH_SIDE from the job env.
 name: prepare
 description: Check out a pinned project, set up its toolchain and wire its caches.
@@ -149,3 +151,18 @@ runs:
       env:
         HIT: ${{ steps.restore.outputs.cache-hit }}
       run: echo "BENCH_CACHE_HIT=${HIT:-false}" >> "$GITHUB_ENV"
+
+    # 2026-11-02: per-run entries are used once; delete this one now so the next
+    # projects' saves never push an unread entry out of the 10 GB (scripts/env.sh).
+    # A failed delete only warns: bench.yml's plan job sweeps leftovers next run.
+    - name: drop used cache entry
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        curl -fsS -o /dev/null -X DELETE -G \
+          -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+          --data-urlencode "key=$BENCH_CACHE_KEY" \
+          "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/caches" \
+          || echo "::warning::could not delete cache entry $BENCH_CACHE_KEY"

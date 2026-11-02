@@ -33,7 +33,7 @@
  * @property {number} jobSec         started → completed
  * @property {number|null} buildSec  the `build` step; null when it did not succeed
  * @property {Conclusion} conclusion
- * @property {boolean|null} [cacheHit]  warm only: was last night's cache restored? null = cold or unknown (2026-11-02)
+ * @property {boolean|null} [cacheHit]  warm only: was the saved cache restored? null = cold or unknown (2026-11-02)
  */
 
 /**

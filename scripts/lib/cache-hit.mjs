@@ -1,6 +1,7 @@
 // @ts-check
 /**
- * Did a warm job really start from last night's saved files? (2026-11-02)
+ * Did a warm job really start from restored saved files? (2026-11-02; since the per-run
+ * scheme the files come from the same run's cold job, see scripts/env.sh)
  *
  * A warm number is only fair when its cache was restored: on 2026-10-31 (run 41189686531)
  * Codemany's warm Excalidraw build had no restore at all and was compared with GitHub's

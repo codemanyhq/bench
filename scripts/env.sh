@@ -7,22 +7,43 @@
 #         fresh, wiped machine (its "public twin"), so last night's folder is never on disk.
 #         Each side keeps its own key: Codemany never builds with files GitHub saved.
 # Same folder layout on both sides, so cold vs warm is the only difference that matters.
-# Inputs (env): BENCH_PROJECT BENCH_MODE BENCH_LANG BENCH_SHA BENCH_TOOLCHAIN
+#
+# 2026-11-02, BENCH_CACHE_SCOPE=run (bench.yml): the cold build SAVES its folder and the
+# warm build of the same project, same run, RESTORES it (then deletes it, prepare). Why:
+# both sides' nightly caches (~2 x 7 GB) did not fit GitHub's 10 GB per repo, so they
+# pushed each other out and warm jobs missed (run 41507481012: Now in Android). Then:
+#   - cold and warm use the SAME folder: actions/cache only matches a save made with
+#     the same path, and a cold save from $RUNNER_TEMP never matched a warm restore;
+#   - the folder is emptied first in both modes, so warm only ever has restored files;
+#   - the key carries the run id, so every run saves fresh keys (no "another job may be
+#     creating this cache" clash with an older run's entry).
+# Unset (bench-private.yml): nightly keys, as before.
+# Inputs (env): BENCH_PROJECT BENCH_MODE BENCH_LANG BENCH_SHA BENCH_TOOLCHAIN [BENCH_CACHE_SCOPE]
 set -euo pipefail
 
 put() { echo "$1=$2" >> "$GITHUB_ENV"; }
 src="${GITHUB_WORKSPACE:?}/src"
 
+per_run=false; [[ "${BENCH_CACHE_SCOPE:-}" == run ]] && per_run=true
 case "$BENCH_MODE" in
   cold) cache="${RUNNER_TEMP:?}/bench-cache"
-        if [[ -d "$cache" ]]; then chmod -R u+w "$cache"; rm -rf "$cache"; fi ;;
+        $per_run && cache="$HOME/.cache/codemany-bench/$BENCH_PROJECT" ;;
   warm) cache="$HOME/.cache/codemany-bench/$BENCH_PROJECT" ;;
   *)    echo "::error::unknown mode '$BENCH_MODE'"; exit 1 ;;
 esac
+# Empty it first: cold always, warm too per run (only restored files may be in it).
+if [[ "$BENCH_MODE" == cold ]] || $per_run; then
+  if [[ -d "$cache" ]]; then chmod -R u+w "$cache"; rm -rf "$cache"; fi
+fi
 mkdir -p "$cache"
 put BENCH_CACHE "$cache"
-prefix="bench-v1"; [[ "${BENCH_SIDE:-}" == codemany ]] && prefix="bench-v1-codemany"
-put BENCH_CACHE_KEY "$prefix-$BENCH_PROJECT-$BENCH_SHA-$RUNNER_OS-$RUNNER_ARCH"
+side="${BENCH_SIDE:-github}"
+if $per_run; then
+  put BENCH_CACHE_KEY "bench-run-$side-$BENCH_PROJECT-$BENCH_SHA-$RUNNER_OS-$RUNNER_ARCH-${GITHUB_RUN_ID:?}"
+else
+  prefix="bench-v1"; [[ "$side" == codemany ]] && prefix="bench-v1-codemany"
+  put BENCH_CACHE_KEY "$prefix-$BENCH_PROJECT-$BENCH_SHA-$RUNNER_OS-$RUNNER_ARCH"
+fi
 put BENCH_SCRIPTS "$GITHUB_WORKSPACE/bench/scripts"
 
 case "$BENCH_LANG" in

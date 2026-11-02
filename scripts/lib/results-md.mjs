@@ -32,7 +32,7 @@ export function resultsBlock(cold, warm, fmt) {
     '',
     modeTable(cold, fmt, view),
     '',
-    '### With saved files from last night',
+    '### With saved files',
     '',
     picture('charts/speed-warm', 'Build time with saved files: GitHub vs Codemany'),
     '',

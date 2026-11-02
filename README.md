@@ -184,7 +184,7 @@ Builds keep files around to go faster next time (a *cache*).
 | How | What it means |
 | --- | --- |
 | From scratch | Every saved file is thrown away first, on both computers. |
-| With saved files | Last night's files are kept (private Linux: last week's). GitHub downloads them; Codemany already has them. |
+| With saved files | The from-scratch build saves its files, and the build with saved files downloads them first, from GitHub's cache, on both computers (private Linux: last week's files). |
 
 ### What we time
 
