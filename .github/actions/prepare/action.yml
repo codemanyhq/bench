@@ -30,6 +30,19 @@ runs:
       shell: bash
       run: rm -rf "${GITHUB_WORKSPACE:?}/src"
 
+    # 2026-11-02: every Mac job builds with the Xcode its job pins in DEVELOPER_DIR
+    # (bench.yml). Stop at once, saying which, when this Mac doesn't have it yet,
+    # instead of building with another Xcode or failing deep in xcodebuild.
+    - name: xcode check
+      if: inputs.lang == 'Swift' || inputs.lang == 'iOS'
+      shell: bash
+      run: |
+        if [[ -z "${DEVELOPER_DIR:-}" || ! -x "$DEVELOPER_DIR/usr/bin/xcodebuild" ]]; then
+          echo "::error::the pinned Xcode is not on this Mac: DEVELOPER_DIR='${DEVELOPER_DIR:-}'"
+          exit 1
+        fi
+        xcodebuild -version
+
     - name: checkout project
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:

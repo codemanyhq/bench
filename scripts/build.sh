@@ -23,12 +23,16 @@ case "$BENCH_PROJECT" in
               python -m pip install -r tests/requirements/py3-free-threading.txt -e .
               python -Wall tests/runtests.py -v2 ;;
   kubernetes) make WHAT=cmd/kubectl ;;                                  # build/root/Makefile:96-97
+  # 2026-11-02: no `-sdk iphonesimulator` (bitrise has it): it forces the host-only Swift
+  # macro targets onto the simulator SDK, where the macOS swift-syntax prebuilts can't be
+  # found ("Unable to resolve module dependency: 'SwiftSyntax'", both sides, run 41507481012).
+  # The destination alone still builds the app for the iOS Simulator.
   firefox-ios) ./bootstrap.sh firefox                                   # firefox-ios bitrise.yml:78-79
               cd firefox-ios
               xcodebuild -resolvePackageDependencies -onlyUsePackageVersionsFromResolvedFile \
                 -project Client.xcodeproj -scheme Fennec -clonedSourcePackagesDirPath "$BENCH_CACHE/spm"
               xcodebuild -project Client.xcodeproj -scheme Fennec -configuration Debug \
-                -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' build-for-testing \
+                -destination 'generic/platform=iOS Simulator' build-for-testing \
                 COMPILER_INDEX_STORE_ENABLE=NO CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO \
                 CODE_SIGNING_ALLOWED=NO ARCHS=arm64 -derivedDataPath "$BENCH_CACHE/DerivedData" \
                 -clonedSourcePackagesDirPath "$BENCH_CACHE/spm" -skipMacroValidation \
