@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs after every bench job, pass or fail (2026-10-30). Frees disk on Codemany machines:
 # the docker builder and image, the cold cache folder and the source checkout.
-# Warm caches stay on purpose: that is what "warm" means.
+# Warm caches stay on purpose (nightly keys): that is what "warm" means.
 set -uo pipefail
 
 if [[ -n "${BENCH_BUILDER:-}" ]]; then
@@ -11,6 +11,12 @@ fi
 
 # Only ever delete a cold cache that lives inside this job's temp folder.
 if [[ "${BENCH_MODE:-}" == cold && -n "${RUNNER_TEMP:-}" && "${BENCH_CACHE:-}" == "$RUNNER_TEMP"/* ]]; then
+  chmod -R u+w "$BENCH_CACHE" 2>/dev/null
+  rm -rf "$BENCH_CACHE"
+fi
+# 2026-11-02: per run (env.sh), the folder is saved/restored through GitHub's cache and
+# emptied before every use, so nothing on disk is reused: free it in both modes.
+if [[ "${BENCH_CACHE_SCOPE:-}" == run && -n "${HOME:-}" && "${BENCH_CACHE:-}" == "$HOME/.cache/codemany-bench/"?* ]]; then
   chmod -R u+w "$BENCH_CACHE" 2>/dev/null
   rm -rf "$BENCH_CACHE"
 fi
