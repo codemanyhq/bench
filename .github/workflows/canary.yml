@@ -1,0 +1,193 @@
+# canary: the release gate's smoke test (2026-11-03). 0.58.0 passed every unit test, yet
+# every public Linux job failed to start, so a Stable promote now waits for these jobs to
+# pass on Codemany machines that already run the new version (scripts/release/canary-gate.sh
+# in arpwal/codemany dispatches this workflow in arpwal/codemany and codemanyhq/bench).
+# The same file lives in both repos: keep them identical.
+#
+# Covered: a plain job, `services: postgres`, a `container:` job with actions/checkout,
+# actions/cache save + restore and upload-artifact@v4 / download-artifact@v4 (the versions
+# most public workflows pin). Linux is required; macOS runs when a Mac is on the version
+# and is skipped (warning, not failure) otherwise.
+#
+# SAFETY (public codemanyhq/bench): workflow_dispatch is the ONLY trigger. Never add
+# pull_request / pull_request_target / issue_comment / push: they would let anyone run code
+# on the Codemany machines.
+name: canary
+run-name: canary ${{ inputs.version }} ${{ inputs.nonce }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Codemany version the machines must run, e.g. 0.58.1"
+        required: true
+        type: string
+      wait_minutes:
+        description: "How long the Linux version check waits for the machine to update"
+        required: false
+        type: string
+        default: "5"
+      nonce:
+        description: "Run name tag the gate uses to find this run"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  # Plain host job: the machine is on the version (waits for its auto-update), then a
+  # cache save and an artifact upload the container job reads back.
+  linux:
+    runs-on: [self-hosted, Linux, codemany]
+    timeout-minutes: 8
+    outputs:
+      machine: ${{ steps.version.outputs.machine }}
+    steps:
+      - id: version
+        name: Codemany is on the version
+        env:
+          WANT: ${{ inputs.version }}
+          WAIT: ${{ inputs.wait_minutes }}
+        run: |
+          set -euo pipefail
+          deadline=$(( $(date +%s) + ${WAIT:-5} * 60 ))
+          while :; do
+            got="$(/usr/bin/codemany version 2>/dev/null | awk '{print $2}')"; got="${got#v}"
+            [[ "$got" == "${WANT#v}" ]] && break
+            if (( $(date +%s) >= deadline )); then
+              echo "::error::$RUNNER_NAME runs Codemany ${got:-unknown}, not ${WANT#v} (still updating? Update Now in the app, then re-run the gate)"
+              exit 1
+            fi
+            sleep 15
+          done
+          echo "machine=${RUNNER_NAME%-*-*}" >> "$GITHUB_OUTPUT"
+          echo "::notice::$RUNNER_NAME runs Codemany $got"
+      - name: Make the payload
+        run: mkdir -p canary && echo "${{ github.run_id }}" > canary/payload.txt
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: canary
+          key: canary-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: canary-payload
+          path: canary/payload.txt
+          retention-days: 1
+
+  # `services:` (the job's Docker network and a service container) on the host.
+  services:
+    needs: linux
+    runs-on: [self-hosted, Linux, codemany]
+    timeout-minutes: 6
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: canary
+        ports: ["5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - name: Same machine and version
+        env:
+          WANT: ${{ inputs.version }}
+          MACHINE: ${{ needs.linux.outputs.machine }}
+        run: |
+          set -euo pipefail
+          got="$(/usr/bin/codemany version | awk '{print $2}')"; got="${got#v}"
+          [[ "$got" == "${WANT#v}" ]] || { echo "::error::$RUNNER_NAME runs Codemany $got, not ${WANT#v}"; exit 1; }
+          echo "::notice::$RUNNER_NAME (first job on $MACHINE) runs Codemany $got"
+      - name: Postgres answers
+        env:
+          PORT: ${{ job.services.postgres.ports['5432'] }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 30); do
+            (exec 3<>"/dev/tcp/127.0.0.1/$PORT") 2>/dev/null && { echo "postgres up on $PORT"; exit 0; }
+            sleep 2
+          done
+          echo "::error::postgres did not answer on port $PORT"; exit 1
+
+  # `container:` job: checkout, cache restore and artifact download inside the container.
+  container:
+    needs: linux
+    runs-on: [self-hosted, Linux, codemany]
+    timeout-minutes: 6
+    container:
+      image: ubuntu:24.04
+    steps:
+      - name: Same machine as the version check
+        env:
+          MACHINE: ${{ needs.linux.outputs.machine }}
+          NAME: ${{ runner.name }}
+        run: |
+          set -eu
+          name="${NAME:-unknown}"
+          case "$name" in
+            "$MACHINE"-*) echo "container job on $name" ;;
+            *) echo "::error::container job ran on $name, not on $MACHINE (its version is unchecked): re-run the gate"; exit 1 ;;
+          esac
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: README.md
+      - uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: canary
+          key: canary-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: canary-payload
+          path: downloaded
+      - name: Everything came back
+        run: |
+          set -eu
+          test -f README.md
+          test "$(cat canary/payload.txt)" = "${{ github.run_id }}"
+          test "$(cat downloaded/payload.txt)" = "${{ github.run_id }}"
+
+  # macOS: a plain job with cache + artifacts, only when a Mac is on the version.
+  macos:
+    runs-on: [self-hosted, macOS, codemany]
+    timeout-minutes: 6
+    steps:
+      - id: version
+        name: Codemany is on the version (else skip)
+        env:
+          WANT: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          got="$(/Applications/Codemany.app/Contents/Resources/bin/codemany version 2>/dev/null | awk '{print $2}' || true)"; got="${got#v}"
+          if [[ "$got" == "${WANT#v}" ]]; then echo "on=1" >> "$GITHUB_OUTPUT"; echo "::notice::$RUNNER_NAME runs Codemany $got"
+          else echo "::warning::$RUNNER_NAME runs Codemany ${got:-unknown}, not ${WANT#v}: macOS checks skipped"; fi
+      - if: steps.version.outputs.on == '1'
+        run: mkdir -p canary && echo "${{ github.run_id }}" > canary/payload.txt
+      - if: steps.version.outputs.on == '1'
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: canary
+          key: canary-mac-${{ github.run_id }}-${{ github.run_attempt }}
+      - if: steps.version.outputs.on == '1'
+        run: rm -rf canary
+      - if: steps.version.outputs.on == '1'
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: canary
+          key: canary-mac-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+      - if: steps.version.outputs.on == '1'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: canary-mac
+          path: canary/payload.txt
+          retention-days: 1
+      - if: steps.version.outputs.on == '1'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: canary-mac
+          path: downloaded
+      - if: steps.version.outputs.on == '1'
+        run: test "$(cat downloaded/payload.txt)" = "${{ github.run_id }}"
