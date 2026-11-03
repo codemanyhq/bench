@@ -21,5 +21,7 @@ if [[ "${BENCH_CACHE_SCOPE:-}" == run && "${BENCH_CACHE:-}" == "$GITHUB_WORKSPAC
   rm -rf "$BENCH_CACHE"
 fi
 
-rm -rf "${GITHUB_WORKSPACE:?}/src" "${RUNNER_TEMP:-/nonexistent}/bin"
+# 2026-11-03: the per-job Android SDK and plain buildkitd.toml too (prepare, env.sh).
+rm -rf "${GITHUB_WORKSPACE:?}/src" "${RUNNER_TEMP:-/nonexistent}/bin" \
+  "${RUNNER_TEMP:-/nonexistent}/android-sdk" "${RUNNER_TEMP:-/nonexistent}/buildkitd-plain.toml"
 exit 0

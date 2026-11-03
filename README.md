@@ -152,6 +152,8 @@ We show the real time and the real price. We don't make GitHub or Codemany look 
 - **Public code is free on GitHub.** It gets a bigger Linux computer (4 cores). Those times are under **More numbers**. Macs are the same for both.
 - **Same code, same steps.** Both sides build the exact same version, with the project's own build command and the same tools.
 - **You can check.** Each time links to its real run on GitHub. Only the private runs can't be opened, because that project is private.
+- **Some things stay on a Codemany computer.** On Codemany, Docker images and tools stay on the computer between runs, like on any computer you own. GitHub gives every job a fresh computer with its own tools already on it. Saved build files never carry over to a "from scratch" build, on either side. [What stays](#what-stays-on-a-codemany-computer) lists all of it.
+- **We show the wait.** Next to each build time is how long the job waited for a computer. Codemany's computer takes one bench build at a time, so later builds wait for the ones before them.
 - **Codemany costs $20 a month** for 2 computers. Codemany runs on a computer you own. That computer isn't in this price.
 
 <details>
@@ -183,13 +185,28 @@ Builds keep files around to go faster next time (a *cache*).
 
 | How | What it means |
 | --- | --- |
-| From scratch | Every saved file is thrown away first, on both computers. |
-| With saved files | The from-scratch build saves its files, and the build with saved files downloads them first, from GitHub's cache, on both computers (private Linux: last week's files). |
+| From scratch | Every saved file is thrown away first, on both computers. Nothing is asked of any cache: no restore, no fallback key, and the tools' own caches (`setup-node`, `setup-go` and the rest) are off. [`scripts/check-cold.mjs`](scripts/check-cold.mjs) stops the run if that ever changes. |
+| With saved files | The from-scratch build saves its files, and the build with saved files downloads them first, on both computers (private Linux: last week's files). GitHub serves them from its cache. On the Codemany Linux computer, Codemany's own cache serves them, from that computer's disk. Each save has the run's number in its name, so a build only ever gets files from its own run. |
+
+### What stays on a Codemany computer
+
+A Codemany computer is a computer you own, so some things stay on it between jobs. Here is all of it, and what we do about it.
+
+| What stays | Does it help a build from scratch? |
+| --- | --- |
+| The job's home folder | No. Codemany empties it after every job. |
+| Saved build files (Codemany's own cache for `actions/cache`) | No. Builds from scratch never ask for them, and every name has the run's number in it. GitHub's cache is emptied at the start of each run; Codemany's can't be from here, and doesn't need to be. |
+| Saved downloads for private code (Codemany keeps Go, npm, pip, Cargo, Gradle files per owner) | No. This repo is public, so it gets none. Every one of those folders is pointed at the build's own folder anyway, which starts empty from scratch. |
+| Docker Hub images in Codemany's local copy (a mirror) | No. Builds from scratch start BuildKit without the mirror, so they download from Docker Hub, like GitHub. Builds with saved files use the mirror. |
+| Docker images in the computer's Docker | Only before the clock starts: BuildKit's own image. The build itself starts BuildKit fresh. |
+| Tools (Go, Node, Python, Java, Xcode, Rust) | Only before the clock starts. GitHub's computers come with tools on them too. |
+| The Android SDK | No. Both sides start every Android job with an empty SDK folder and download what the build needs. |
 
 ### What we time
 
 - Only the `build` step. Getting tools and saved files ready happens before the clock starts, on both sides.
 - Codemany builds one project at a time, so each build gets the whole computer, like a fresh GitHub computer does.
+- The wait is timed too, on its own: from when GitHub makes the job to when a computer starts it (`queueSec` in [`data/results.json`](data/results.json)). It is never in the build time. On Codemany, a build waits for the ones before it, because the computer takes one at a time.
 - Public builds start every night at 03:17 UTC. Private Linux builds start on Sundays and Wednesdays at 05:17 UTC.
 
 ### Check it yourself

@@ -5,6 +5,9 @@
 #   warm: $HOME/.cache/codemany-bench/<project>, restored from actions/cache on BOTH sides.
 #         2026-11-02: the bench repo is public, and Codemany runs a public repo's job on a
 #         fresh, wiped machine (its "public twin"), so last night's folder is never on disk.
+#         2026-11-03: public jobs now run on the host as a slot user whose home Codemany
+#         wipes after every job; machine-wide state (tool cache, Docker images, job cache)
+#         stays, and the README says so ("What stays on a Codemany computer").
 #         Each side keeps its own key: Codemany never builds with files GitHub saved.
 # Same folder layout on both sides, so cold vs warm is the only difference that matters.
 #
@@ -56,6 +59,17 @@ else
 fi
 put BENCH_SCRIPTS "$GITHUB_WORKSPACE/bench/scripts"
 
+# 2026-11-03 (honesty): the per-user caches a tool falls back to live in $cache too, on
+# both sides and in both modes. They are the folders Codemany's per-owner dependency cache
+# (internal/helper/depcache.go: private repos only, so this public repo gets none) keeps
+# between jobs. Pointed here, a cold build never finds one, even in a private copy of this
+# bench. The language blocks below point some of them at other folders in $cache.
+for v in GOMODCACHE:go/mod GOCACHE:go/build CARGO_HOME:cargo npm_config_cache:npm \
+         YARN_CACHE_FOLDER:yarn PIP_CACHE_DIR:pip GRADLE_USER_HOME:gradle \
+         XDG_CACHE_HOME:xdg HOMEBREW_CACHE:homebrew; do
+  put "${v%%:*}" "$cache/${v#*:}"
+done
+
 case "$BENCH_LANG" in
   Rust)
     put RUSTUP_TOOLCHAIN "$BENCH_TOOLCHAIN"
@@ -101,8 +115,18 @@ case "$BENCH_LANG" in
     put CCACHE_DISABLE 1 ;;
   Docker)
     # A fresh BuildKit builder per job: base images are pulled on both sides.
+    # 2026-11-03 (honesty): from scratch, the builder starts with a plain buildkitd.toml, so
+    # it pulls base images (node, nginx) from Docker Hub itself on both sides. Otherwise a
+    # Codemany Linux machine's builders use its local Docker Hub mirror (internal/regmirror),
+    # which still holds them from earlier jobs: a head start GitHub doesn't get. With saved
+    # files the mirror stays on: it is how a Codemany machine works (README "What stays").
     builder="bench-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$BENCH_PROJECT-$BENCH_MODE"
-    docker buildx create --name "$builder" --driver docker-container --bootstrap >/dev/null
+    conf=()
+    if [[ "$BENCH_MODE" == cold ]]; then
+      echo "# bench, from scratch (2026-11-03): no registry mirror" > "$RUNNER_TEMP/buildkitd-plain.toml"
+      conf=(--buildkitd-config "$RUNNER_TEMP/buildkitd-plain.toml")
+    fi
+    docker buildx create --name "$builder" --driver docker-container ${conf[@]+"${conf[@]}"} --bootstrap >/dev/null
     put BENCH_BUILDER "$builder" ;;
   Swift) ;;
   *) echo "::error::unknown lang '$BENCH_LANG'"; exit 1 ;;

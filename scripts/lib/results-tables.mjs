@@ -41,14 +41,23 @@ export function simpleTable(s, fmt, view) {
   );
 }
 
-/** The fuller table, under "More numbers". @param {Summary} s @param {DataModule} fmt @param {TableView} view */
+/** True once the site module reports waits (2026-11-03: SideStat.waitSec). @param {Summary} s */
+const hasWaits = (s) => s.projects.some((p) => typeof p.github?.waitSec === 'number' || typeof p.codemany?.waitSec === 'number');
+
+/**
+ * The fuller table, under "More numbers". 2026-11-03: with waits, each time is followed by
+ * how long that job waited for a computer (never part of the build time).
+ * @param {Summary} s @param {DataModule} fmt @param {TableView} view
+ */
 export function modeTable(s, fmt, view) {
-  const head = ['Project', 'GitHub', 'Codemany', 'Result'];
+  const waits = hasWaits(s);
+  const head = waits ? ['Project', 'GitHub', 'Waited', 'Codemany', 'Waited', 'Result'] : ['Project', 'GitHub', 'Codemany', 'Result'];
   return table(
     view.price ? [...head, 'GitHub price¹'] : head,
     s.projects.map((p) => {
-      const cells = [p.name, view.githubTime(p), fmt.formatDuration(p.codemany?.medianSec),
-        p.warmingUp ? 'warming up' : p.speedup == null ? '—' : fmt.formatSpeedup(p.speedup)];
+      const gh = [view.githubTime(p), ...(waits ? [fmt.formatDuration(p.github?.waitSec)] : [])];
+      const cm = [fmt.formatDuration(p.codemany?.medianSec), ...(waits ? [fmt.formatDuration(p.codemany?.waitSec)] : [])];
+      const cells = [p.name, ...gh, ...cm, p.warmingUp ? 'warming up' : p.speedup == null ? '—' : fmt.formatSpeedup(p.speedup)];
       return view.price ? [...cells, fmt.formatUSD(p.githubCostUSD)] : cells;
     }),
   );

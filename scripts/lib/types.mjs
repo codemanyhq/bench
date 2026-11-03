@@ -92,7 +92,7 @@
 
 /** @typedef {{ codemany: CodemanyMachine[], github: GithubRunner[] }} Hardware */
 
-/** @typedef {{ medianSec: number, p90Sec: number, n: number, runner: string, lastJobUrl: string }} SideStat */
+/** waitSec (2026-11-03): median created → started of the same jobs, from a site module that has it. @typedef {{ medianSec: number, p90Sec: number, n: number, runner: string, lastJobUrl: string, waitSec?: number }} SideStat */
 /** @typedef {{ date: string, github: number|null, codemany: number|null }} TrendPoint */
 
 /**
