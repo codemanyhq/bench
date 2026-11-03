@@ -11,6 +11,14 @@
 # Every bench job has ONE step named `build`: that step's time is the headline number
 # (scripts/collect.mjs reads it). Job names are `<project> · <side> · <mode>`.
 # A warm job counts only if its `cache hit` step ran (2026-11-02, scripts/lib/cache-hit.mjs).
+# Waiting (2026-11-03): collect.mjs keeps each job's created → started time (queueSec).
+# Codemany's jobs here wait their turn (max-parallel: 1), so their wait includes earlier jobs.
+#
+# Cold honesty (2026-11-03, scripts/check-cold.mjs runs first in `plan`): a cold job never
+# restores anything, setup-* caches are off, keys carry the run id with no restore-keys, the
+# Android SDK starts empty on both sides and cold Docker builders skip Codemany's local
+# Docker Hub mirror. What a Codemany machine still keeps between jobs (tool cache, Docker
+# images in its daemon, its job cache) is machine state, said plainly in the README.
 #
 # Saved files (2026-11-02, BENCH_CACHE_SCOPE=run, scripts/env.sh): each project's cold job
 # saves its cache folder to GitHub's cache service; its warm job in the SAME run restores
@@ -52,6 +60,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # 2026-11-03: stop before any build if a cache could warm a cold build on one side
+      # only (Codemany keeps its own job cache, which the sweep below can't empty).
+      - name: check cold
+        run: node scripts/check-cold.mjs
       - id: plan
         run: bash scripts/plan.sh data/projects.json >> "$GITHUB_OUTPUT"
       # 2026-11-02: start every run with an empty cache (only one bench run at a time:

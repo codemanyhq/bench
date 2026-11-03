@@ -5,6 +5,10 @@
 #    cold → an empty folder; warm → the saved folder, restored from GitHub's cache
 #    service on both sides (2026-11-02: a public repo's Codemany job runs on a wiped
 #    machine, so nothing from an earlier job is on its disk; see scripts/env.sh).
+#    2026-11-03: on codemany-linux-01 actions/cache is served by Codemany's own job cache
+#    (this machine's disk, then GCS), not GitHub's. Cold jobs never restore, keys carry the
+#    run id and there are no restore-keys, so a run only ever reads its own saves.
+#    scripts/check-cold.sh (plan job) fails the run if a cache could warm a cold build.
 #    bench.yml (BENCH_CACHE_SCOPE=run): the cold job of the same run saved it, and the
 #    warm job deletes the entry once restored, so both sides fit GitHub's 10 GB.
 # Reads BENCH_PROJECT / BENCH_MODE / BENCH_SIDE from the job env.
@@ -116,15 +120,16 @@ runs:
         distribution: zulu
         java-version: ${{ inputs.toolchain }}
 
-    # GitHub's image has an Android SDK in $ANDROID_HOME; a Codemany machine has none
-    # and no sudo, so it gets one in a per-user folder (kept for later nights, outside
-    # $BENCH_CACHE). Both sides get platform-tools here; the Android Gradle plugin fetches
-    # the compile platform itself during the build, the same way on both sides.
-    - name: android sdk folder (Codemany)
-      if: inputs.lang == 'Android' && env.BENCH_SIDE == 'codemany'
+    # 2026-11-03 (honesty): an EMPTY Android SDK folder for this job, on BOTH sides. GitHub's
+    # image ships an SDK with platforms already in it, and a Codemany machine has none, so
+    # the build used to download its compile platform only on Codemany. Now both sides get
+    # platform-tools here, and the Android Gradle plugin downloads the compile platform
+    # during the build on both sides. $RUNNER_TEMP is emptied after every job (runner).
+    - name: android sdk folder
+      if: inputs.lang == 'Android'
       shell: bash
       run: |
-        sdk="$HOME/.cache/codemany-bench/android-sdk"; mkdir -p "$sdk"
+        sdk="$RUNNER_TEMP/android-sdk"; rm -rf "$sdk"; mkdir -p "$sdk"
         { echo "ANDROID_HOME=$sdk"; echo "ANDROID_SDK_ROOT=$sdk"; } >> "$GITHUB_ENV"
     - name: android sdk
       if: inputs.lang == 'Android'
