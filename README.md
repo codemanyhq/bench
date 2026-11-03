@@ -56,9 +56,9 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 
 | Project | GitHub | Codemany | Result |
 | --- | --- | --- | --- |
-| ripgrep | 29s | 13s | 2.2× faster |
+| ripgrep | 28s | 13s | 2.2× faster |
 | Hugo | 1m 17s | 34s | 2.3× faster |
-| react.dev | 2m 00s | 1m 34s | 1.3× faster |
+| react.dev | 2m 02s | 1m 34s | 1.3× faster |
 | Excalidraw | 1m 17s | 1m 19s | about the same |
 | SwiftLint | 14m 46s | 4m 40s | 3.2× faster |
 
