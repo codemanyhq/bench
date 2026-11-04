@@ -6,8 +6,8 @@
 #
 # Covered: a plain job, `services: postgres`, a `container:` job with actions/checkout,
 # actions/cache save + restore and upload-artifact@v4 / download-artifact@v4 (the versions
-# most public workflows pin). Linux is required; macOS runs when a Mac is on the version
-# and is skipped (warning, not failure) otherwise.
+# most public workflows pin). Linux and macOS are both required: each waits up to
+# wait_minutes for its machine to auto-update to the version, then fails.
 #
 # SAFETY (public codemanyhq/bench): workflow_dispatch is the ONLY trigger. Never add
 # pull_request / pull_request_target / issue_comment / push: they would let anyone run code
@@ -52,7 +52,8 @@ jobs:
           WAIT: ${{ inputs.wait_minutes }}
         run: |
           set -euo pipefail
-          deadline=$(( $(date +%s) + ${WAIT:-5} * 60 ))
+          [[ "$WAIT" =~ ^[0-9]{1,2}$ ]] || { echo "::error::wait_minutes must be 0-99, got '$WAIT'"; exit 1; }
+          deadline=$(( $(date +%s) + WAIT * 60 ))
           while :; do
             got="$(/usr/bin/codemany version 2>/dev/null | awk '{print $2}')"; got="${got#v}"
             [[ "$got" == "${WANT#v}" ]] && break
@@ -149,45 +150,49 @@ jobs:
           test "$(cat canary/payload.txt)" = "${{ github.run_id }}"
           test "$(cat downloaded/payload.txt)" = "${{ github.run_id }}"
 
-  # macOS: a plain job with cache + artifacts, only when a Mac is on the version.
+  # macOS: a plain job with cache save/restore + artifacts. Required (CMY-87: Mac and
+  # Linux must run and pass): it waits for the Mac to update, like the Linux job.
   macos:
     runs-on: [self-hosted, macOS, codemany]
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
-      - id: version
-        name: Codemany is on the version (else skip)
+      - name: Codemany is on the version
         env:
           WANT: ${{ inputs.version }}
+          WAIT: ${{ inputs.wait_minutes }}
         run: |
           set -euo pipefail
-          got="$(/Applications/Codemany.app/Contents/Resources/bin/codemany version 2>/dev/null | awk '{print $2}' || true)"; got="${got#v}"
-          if [[ "$got" == "${WANT#v}" ]]; then echo "on=1" >> "$GITHUB_OUTPUT"; echo "::notice::$RUNNER_NAME runs Codemany $got"
-          else echo "::warning::$RUNNER_NAME runs Codemany ${got:-unknown}, not ${WANT#v}: macOS checks skipped"; fi
-      - if: steps.version.outputs.on == '1'
-        run: mkdir -p canary && echo "${{ github.run_id }}" > canary/payload.txt
-      - if: steps.version.outputs.on == '1'
-        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+          [[ "$WAIT" =~ ^[0-9]{1,2}$ ]] || { echo "::error::wait_minutes must be 0-99, got '$WAIT'"; exit 1; }
+          bin=/Applications/Codemany.app/Contents/Resources/bin/codemany
+          deadline=$(( $(date +%s) + WAIT * 60 ))
+          while :; do
+            got="$("$bin" version 2>/dev/null | awk '{print $2}' || true)"; got="${got#v}"
+            [[ "$got" == "${WANT#v}" ]] && break
+            if (( $(date +%s) >= deadline )); then
+              echo "::error::$RUNNER_NAME runs Codemany ${got:-unknown}, not ${WANT#v} (Beta-enrolled? Update Now in the app, then re-run the gate)"
+              exit 1
+            fi
+            sleep 15
+          done
+          echo "::notice::$RUNNER_NAME runs Codemany $got"
+      - run: mkdir -p canary && echo "${{ github.run_id }}" > canary/payload.txt
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: canary
           key: canary-mac-${{ github.run_id }}-${{ github.run_attempt }}
-      - if: steps.version.outputs.on == '1'
-        run: rm -rf canary
-      - if: steps.version.outputs.on == '1'
-        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      - run: rm -rf canary
+      - uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: canary
           key: canary-mac-${{ github.run_id }}-${{ github.run_attempt }}
           fail-on-cache-miss: true
-      - if: steps.version.outputs.on == '1'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: canary-mac
           path: canary/payload.txt
           retention-days: 1
-      - if: steps.version.outputs.on == '1'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: canary-mac
           path: downloaded
-      - if: steps.version.outputs.on == '1'
-        run: test "$(cat downloaded/payload.txt)" = "${{ github.run_id }}"
+      - run: test "$(cat downloaded/payload.txt)" = "${{ github.run_id }}"
