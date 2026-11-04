@@ -79,12 +79,19 @@ function envProblems(root) {
   return out.map((p) => `scripts/env.sh: ${p}`);
 }
 
+/**
+ * Workflows that measure nothing (2026-11-04): canary.yml is the Codemany release gate's
+ * save-then-restore check in ONE run (bench#13), never a bench build, so its restores need
+ * no warm-only guard. Listed by name so a new workflow is still checked by default.
+ */
+const NOT_BENCH = new Set(['canary.yml']);
+
 /** @param {string} root @returns {string[]} */
 export function problems(root) {
   const wf = path.join(root, '.github/workflows');
   const actions = path.join(root, '.github/actions');
   const files = [
-    ...readdirSync(wf).filter((f) => f.endsWith('.yml')).map((f) => path.join(wf, f)),
+    ...readdirSync(wf).filter((f) => f.endsWith('.yml') && !NOT_BENCH.has(f)).map((f) => path.join(wf, f)),
     ...readdirSync(actions).map((d) => path.join(actions, d, 'action.yml')).filter((f) => existsSync(f)),
   ];
   const out = files.flatMap(stepsOf).flatMap((s) => RULES.map((r) => r.test(s))
