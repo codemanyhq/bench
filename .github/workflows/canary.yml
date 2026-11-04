@@ -111,7 +111,7 @@ jobs:
           done
           echo "::error::postgres did not answer on port $PORT"; exit 1
 
-  # `container:` job: checkout, cache restore and artifact download inside the container.
+  # `container:` job: checkout, cache save + restore and artifact download inside the container.
   container:
     needs: linux
     runs-on: [self-hosted, Linux, codemany]
@@ -134,10 +134,18 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: README.md
+      # Its own entry, saved and restored in the container: a host entry would miss here
+      # (the host compresses with zstd, ubuntu:24.04 has none, and the cache version differs).
+      - run: mkdir -p canary && echo "${{ github.run_id }}" > canary/payload.txt
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: canary
+          key: canary-ctr-${{ github.run_id }}-${{ github.run_attempt }}
+      - run: rm -rf canary
       - uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: canary
-          key: canary-${{ github.run_id }}-${{ github.run_attempt }}
+          key: canary-ctr-${{ github.run_id }}-${{ github.run_attempt }}
           fail-on-cache-miss: true
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
