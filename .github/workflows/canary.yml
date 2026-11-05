@@ -1,7 +1,8 @@
 # canary: the release gate's smoke test (2026-11-03). 0.58.0 passed every unit test, yet
 # every public Linux job failed to start, so a Stable promote now waits for these jobs to
-# pass on Codemany machines that already run the new version (scripts/release/canary-gate.sh
-# in arpwal/codemany dispatches this workflow in arpwal/codemany and codemanyhq/bench).
+# pass on Codemany machines that already run the new version. scripts/release/canary-gate.sh
+# in arpwal/codemany dispatches it there; in codemanyhq/bench, canary-watch.yml dispatches it
+# for each new Beta version (2026-11-04: no cross-repo token) and the gate only reads the runs.
 # The same file lives in both repos: keep them identical.
 #
 # Covered: a plain job, `services: postgres`, a `container:` job with actions/checkout,
