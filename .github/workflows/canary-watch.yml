@@ -1,0 +1,43 @@
+# canary-watch: start the release canary for each new Beta version (2026-11-04, CMY-87).
+# arpwal/codemany's Stable promote gate (scripts/release/canary-gate.sh) cannot dispatch
+# runs here without a cross-repo token, so this repo starts them itself: every 10 minutes a
+# cheap GitHub-hosted job reads codemany.com/download/latest.json `beta.version` and, if no
+# canary run for that version succeeded or is running, dispatches canary.yml (run-name
+# "canary <version> watch-<id>") on the Codemany machines. The gate then only READS this
+# repo's public runs and passes on a successful "canary <promote_version>" run from main.
+# Failed runs are retried on later ticks, at most MAX_ATTEMPTS per version, so a machine
+# that is still updating gets another chance without burning runners forever.
+#
+# SAFETY (public repo): schedule + workflow_dispatch only, both run main's code. No
+# pull_request* / issue_comment / push trigger. The job never runs on Codemany machines.
+name: canary-watch
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write # dispatch canary.yml in this repo (GITHUB_TOKEN may trigger workflow_dispatch)
+
+concurrency:
+  group: canary-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/canary-watch.sh
+          sparse-checkout-cone-mode: false
+      - name: Dispatch canary for the Beta version when needed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MAX_ATTEMPTS: "6"
+        run: scripts/canary-watch.sh
