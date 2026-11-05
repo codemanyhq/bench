@@ -83,8 +83,10 @@ function envProblems(root) {
  * Workflows that measure nothing (2026-11-04): canary.yml is the Codemany release gate's
  * save-then-restore check in ONE run (bench#13), never a bench build, so its restores need
  * no warm-only guard. Listed by name so a new workflow is still checked by default.
+ * 2026-11-05: canary-mac.yml too (bench#19): the Mac part of the same gate, called only
+ * by canary.yml; its pcm-save -> pcm-restore pair is the same one-run check.
  */
-const NOT_BENCH = new Set(['canary.yml']);
+const NOT_BENCH = new Set(['canary.yml', 'canary-mac.yml']);
 
 /** @param {string} root @returns {string[]} */
 export function problems(root) {
