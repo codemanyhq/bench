@@ -34,7 +34,11 @@ src="${GITHUB_WORKSPACE:?}/src"
 
 per_run=false; [[ "${BENCH_CACHE_SCOPE:-}" == run ]] && per_run=true
 case "$BENCH_MODE" in
-  cold) cache="${RUNNER_TEMP:?}/bench-cache" ;;
+  cold) cache="${RUNNER_TEMP:?}/bench-cache"
+        # 2026-11-04 (honesty): from scratch, skip Codemany's local package mirror.
+        put npm_config_registry      https://registry.npmjs.org/
+        put YARN_NPM_REGISTRY_SERVER https://registry.npmjs.org
+        put GOPROXY                  https://proxy.golang.org,direct ;;
   warm) cache="$HOME/.cache/codemany-bench/$BENCH_PROJECT" ;;
   *)    echo "::error::unknown mode '$BENCH_MODE'"; exit 1 ;;
 esac
