@@ -1,0 +1,93 @@
+# canary-mac (2026-11-05): canary.yml's Mac fixes, called after its `macos` job. Each job
+# checks the Mac runs the version, then exercises one fix that bench run 42015074066 needed
+# on the Codemany Mac mini (slot users `_codemanyN`, Xcode installed from a .xip):
+#   ios-sim      codemany #922  the iOS Simulator runtime matching the SDK is installed
+#   xctest       codemany #923  swift test + xcodebuild test work as a slot user
+#   pcm-save     codemany #924  swift build with a C module, ModuleCache saved to the cache
+#   pcm-restore  codemany #924  restores that cache (maybe another slot user) and builds again
+# Scripts live in scripts/canary/. Each job is small (< 3 minutes on a warm machine).
+#
+# SAFETY: workflow_call only. Another repo calling this runs it on ITS runners, not ours.
+name: canary-mac
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Codemany version the Mac must run"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  ios-sim:
+    runs-on: [self-hosted, macOS, codemany]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/canary
+      - name: Codemany is on the version
+        env:
+          WANT: ${{ inputs.version }}
+        run: scripts/canary/mac-version.sh
+      - name: iOS Simulator runtime matches the SDK (#922)
+        run: scripts/canary/ios-sim.sh
+
+  xctest:
+    runs-on: [self-hosted, macOS, codemany]
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/canary
+      - name: Codemany is on the version
+        env:
+          WANT: ${{ inputs.version }}
+        run: scripts/canary/mac-version.sh
+      - name: XCTest runs as the slot user (#923)
+        run: scripts/canary/xctest.sh
+
+  pcm-save:
+    runs-on: [self-hosted, macOS, codemany]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/canary
+      - name: Codemany is on the version
+        env:
+          WANT: ${{ inputs.version }}
+        run: scripts/canary/mac-version.sh
+      - name: swift build with a C module (#924)
+        run: scripts/canary/pcm-build.sh save
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: canary-pcm
+          key: canary-pcm-${{ github.run_id }}-${{ github.run_attempt }}
+
+  pcm-restore:
+    needs: pcm-save
+    runs-on: [self-hosted, macOS, codemany]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/canary
+      - name: Codemany is on the version
+        env:
+          WANT: ${{ inputs.version }}
+        run: scripts/canary/mac-version.sh
+      - uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: canary-pcm
+          key: canary-pcm-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+      - name: swift build again on the restored cache (#924)
+        run: scripts/canary/pcm-build.sh restore
