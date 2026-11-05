@@ -9,6 +9,8 @@
 # actions/cache save + restore and upload-artifact@v4 / download-artifact@v4 (the versions
 # most public workflows pin). Linux and macOS are both required: each waits up to
 # wait_minutes for its machine to auto-update to the version, then fails.
+# 2026-11-05: `mac-fixes` (canary-mac.yml) also checks the codemany #922/#923/#924 Mac fixes:
+# iOS Simulator runtime, XCTest as a slot user, and a restored swift ModuleCache (.pcm).
 #
 # SAFETY (public codemanyhq/bench): workflow_dispatch is the ONLY trigger. Never add
 # pull_request / pull_request_target / issue_comment / push: they would let anyone run code
@@ -218,3 +220,11 @@ jobs:
           name: canary-mac
           path: downloaded
       - run: test "$(cat downloaded/payload.txt)" = "${{ github.run_id }}"
+
+  # Mac fixes from bench run 42015074066 (#922 iOS sim, #923 XCTest, #924 .pcm cache):
+  # after `macos`, so the Mac has already updated to the version.
+  mac-fixes:
+    needs: macos
+    uses: ./.github/workflows/canary-mac.yml
+    with:
+      version: ${{ inputs.version }}
