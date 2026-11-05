@@ -112,6 +112,12 @@ jobs:
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
+      # 2026-11-05: untimed, after `build`: write cold's Docker layers to the saved files
+      # for warm (scripts/docker-cache-export.sh). Same step on every side.
+      - name: export docker cache
+        if: matrix.mode == 'cold' && matrix.lang == 'Docker'
+        working-directory: src
+        run: bash ../bench/scripts/docker-cache-export.sh
       # Cold only (2026-11-02): save for this run's warm job (GitHub's cache service).
       - name: save cache
         if: matrix.mode == 'cold'
@@ -166,6 +172,12 @@ jobs:
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
+      # 2026-11-05: untimed, after `build`: write cold's Docker layers to the saved files
+      # for warm (scripts/docker-cache-export.sh). Same step on every side.
+      - name: export docker cache
+        if: matrix.mode == 'cold' && matrix.lang == 'Docker'
+        working-directory: src
+        run: bash ../bench/scripts/docker-cache-export.sh
       # Cold only (2026-11-02): save for this run's warm job (GitHub's cache service).
       - name: save cache
         if: matrix.mode == 'cold'
@@ -220,6 +232,12 @@ jobs:
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
+      # 2026-11-05: untimed, after `build`: write cold's Docker layers to the saved files
+      # for warm (scripts/docker-cache-export.sh). Same step on every side.
+      - name: export docker cache
+        if: matrix.mode == 'cold' && matrix.lang == 'Docker'
+        working-directory: src
+        run: bash ../bench/scripts/docker-cache-export.sh
       # Cold only (2026-11-02): save for this run's warm job, the same way as the GitHub side.
       - name: save cache
         if: matrix.mode == 'cold'
@@ -274,6 +292,12 @@ jobs:
       - name: build
         working-directory: src
         run: bash ../bench/scripts/build.sh
+      # 2026-11-05: untimed, after `build`: write cold's Docker layers to the saved files
+      # for warm (scripts/docker-cache-export.sh). Same step on every side.
+      - name: export docker cache
+        if: matrix.mode == 'cold' && matrix.lang == 'Docker'
+        working-directory: src
+        run: bash ../bench/scripts/docker-cache-export.sh
       # Cold only (2026-11-02): save for this run's warm job, the same way as the GitHub side.
       - name: save cache
         if: matrix.mode == 'cold'
