@@ -186,7 +186,7 @@ Builds keep files around to go faster next time (a *cache*).
 | How | What it means |
 | --- | --- |
 | From scratch | Every saved file is thrown away first, on both computers. Nothing is asked of any cache: no restore, no fallback key, and the tools' own caches (`setup-node`, `setup-go` and the rest) are off. [`scripts/check-cold.mjs`](scripts/check-cold.mjs) stops the run if that ever changes. |
-| With saved files | The from-scratch build saves its files, and the build with saved files downloads them first, on both computers (private Linux: last week's files). GitHub serves them from its cache. On the Codemany Linux computer, Codemany's own cache serves them, from that computer's disk. Each save has the run's number in its name, so a build only ever gets files from its own run. |
+| With saved files | The from-scratch build saves its files, and the build with saved files downloads them first, on both computers (private Linux: last week's files). GitHub serves them from its cache. On the Codemany Linux computer, Codemany's own cache serves them, from that computer's disk. Each save has the run's number in its name, so a build only ever gets files from its own run. For Docker, a step after the timed build writes its layers to those files (not timed, on both computers); the build with saved files reads them and writes nothing back. |
 
 ### What stays on a Codemany computer
 
