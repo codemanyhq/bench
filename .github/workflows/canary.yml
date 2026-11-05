@@ -54,8 +54,18 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$WAIT" =~ ^[0-9]{1,2}$ ]] || { echo "::error::wait_minutes must be 0-99, got '$WAIT'"; exit 1; }
+          # CODEMANY_VERSION (2026-11-04): the daemon hands every job its version; job VMs
+          # have no codemany binary. It is fixed for the job, so a mismatch fails at once.
+          # Unset (older daemons): ask the host's binary, which updates while we wait.
           deadline=$(( $(date +%s) + WAIT * 60 ))
           while :; do
+            if [[ -n "${CODEMANY_VERSION:-}" ]]; then
+              got="${CODEMANY_VERSION#v}"
+              [[ "$got" == "${WANT#v}" ]] && break
+              echo "::error::$RUNNER_NAME runs Codemany $got, not ${WANT#v} (the job started before the update: re-run the gate)"
+              exit 1
+            fi
+            [[ -x /usr/bin/codemany ]] || { echo "::error::$RUNNER_NAME: no CODEMANY_VERSION and no /usr/bin/codemany (job VM on a daemon older than the CODEMANY_VERSION fix?)"; exit 1; }
             got="$(/usr/bin/codemany version 2>/dev/null | awk '{print $2}')"; got="${got#v}"
             [[ "$got" == "${WANT#v}" ]] && break
             if (( $(date +%s) >= deadline )); then
@@ -98,7 +108,10 @@ jobs:
           MACHINE: ${{ needs.linux.outputs.machine }}
         run: |
           set -euo pipefail
-          got="$(/usr/bin/codemany version | awk '{print $2}')"; got="${got#v}"
+          # CODEMANY_VERSION first (job VMs have no codemany binary), else the host's binary.
+          if [[ -n "${CODEMANY_VERSION:-}" ]]; then got="${CODEMANY_VERSION#v}"
+          elif [[ -x /usr/bin/codemany ]]; then got="$(/usr/bin/codemany version | awk '{print $2}')"; got="${got#v}"
+          else echo "::error::$RUNNER_NAME: no CODEMANY_VERSION and no /usr/bin/codemany"; exit 1; fi
           [[ "$got" == "${WANT#v}" ]] || { echo "::error::$RUNNER_NAME runs Codemany $got, not ${WANT#v}"; exit 1; }
           echo "::notice::$RUNNER_NAME (first job on $MACHINE) runs Codemany $got"
       - name: Postgres answers
