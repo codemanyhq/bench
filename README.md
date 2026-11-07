@@ -24,8 +24,45 @@ Time to build each project from scratch, for **private code** (the middle of the
 
 Public code? GitHub runs it for free, on a bigger Linux computer. See **More numbers**.
 
+### Every night, the last 30 days (private code, from scratch)
+
+**ripgrep**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-ripgrep-dark.svg">
+  <img alt="ripgrep: build time per night" src="charts/trend-ripgrep-light.svg">
+</picture>
+
+**Hugo**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-hugo-dark.svg">
+  <img alt="Hugo: build time per night" src="charts/trend-hugo-light.svg">
+</picture>
+
+**react.dev**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-react-dev-dark.svg">
+  <img alt="react.dev: build time per night" src="charts/trend-react-dev-light.svg">
+</picture>
+
+**Excalidraw**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-excalidraw-dark.svg">
+  <img alt="Excalidraw: build time per night" src="charts/trend-excalidraw-light.svg">
+</picture>
+
+**SwiftLint**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-swiftlint-dark.svg">
+  <img alt="SwiftLint: build time per night" src="charts/trend-swiftlint-light.svg">
+</picture>
+
 <details>
-<summary><b>More numbers</b>: public code, with saved files, prices, night by night</summary>
+<summary><b>More numbers</b>: public code, with saved files, prices</summary>
 
 ### Private code, from scratch
 
@@ -71,43 +108,6 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 | react.dev | 1m 14s | 2s | 38s | 5m 28s | 2.0× faster |
 | Excalidraw | 2m 22s | 2s | 1m 47s | 11m 02s | 1.3× faster |
 | SwiftLint | 10m 47s | 0s | 5m 10s | 0s | 2.1× faster |
-
-### Night by night (private code, from scratch)
-
-**ripgrep**
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-ripgrep-dark.svg">
-  <img alt="ripgrep: build time per night" src="charts/trend-ripgrep-light.svg">
-</picture>
-
-**Hugo**
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-hugo-dark.svg">
-  <img alt="Hugo: build time per night" src="charts/trend-hugo-light.svg">
-</picture>
-
-**react.dev**
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-react-dev-dark.svg">
-  <img alt="react.dev: build time per night" src="charts/trend-react-dev-light.svg">
-</picture>
-
-**Excalidraw**
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-excalidraw-dark.svg">
-  <img alt="Excalidraw: build time per night" src="charts/trend-excalidraw-light.svg">
-</picture>
-
-**SwiftLint**
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="charts/trend-swiftlint-dark.svg">
-  <img alt="SwiftLint: build time per night" src="charts/trend-swiftlint-light.svg">
-</picture>
 
 ¹ What one GitHub build costs for private code, at the prices in [The computers](#the-computers). Public code is free.
 
