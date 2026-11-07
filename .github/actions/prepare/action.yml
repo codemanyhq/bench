@@ -173,14 +173,10 @@ runs:
     # 2026-11-02: per-run entries are used once; delete this one now so the next
     # projects' saves never push an unread entry out of the 10 GB (scripts/env.sh).
     # A failed delete only warns: bench.yml's plan job sweeps leftovers next run.
+    # 2026-11-07 (CMY-97): on Codemany a 404 is expected (its job cache held the entry).
     - name: drop used cache entry
       if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit == 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
-      run: |
-        curl -fsS -o /dev/null -X DELETE -G \
-          -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-          --data-urlencode "key=$BENCH_CACHE_KEY" \
-          "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/caches" \
-          || echo "::warning::could not delete cache entry $BENCH_CACHE_KEY"
+      run: bash "$GITHUB_WORKSPACE/bench/scripts/drop-cache-entry.sh"
