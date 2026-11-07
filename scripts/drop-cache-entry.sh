@@ -3,25 +3,31 @@
 # Per-run entries are read once; dropping them keeps the next projects' saves from pushing
 # an unread entry out of GitHub's 10 GB per repo (env.sh).
 #
-# 2026-11-07 (CMY-97): HTTP 404 means "no such entry", so it is logged, not warned. That is
-# every Codemany warm job: Codemany's job cache answers actions/cache, so the entry never
-# reaches GitHub's cache API (and GitHub's 10 GB limit doesn't apply to it). On GitHub it
-# means the entry is already gone. Any other failure still warns: bench.yml's plan job
-# sweeps leftovers next run, so a failed delete must not fail a measured build.
-# Inputs (env): GH_TOKEN BENCH_CACHE_KEY GITHUB_API_URL GITHUB_REPOSITORY
+# 2026-11-07 (CMY-97): on Codemany, HTTP 404 is expected and only logged: Codemany's job
+# cache answers actions/cache, so the entry never reaches GitHub's cache API (and GitHub's
+# 10 GB limit doesn't apply to it). The call still runs there, so an entry that did land
+# in GitHub's cache is deleted. On GitHub, this step runs only after a hit on this exact
+# key, so a 404 means something is wrong (key mismatch, entry removed mid-run) and warns.
+# Any failure only warns: bench.yml's plan job sweeps leftovers next run, so a failed
+# delete must not fail a measured build. Missing inputs fail the step.
+# Inputs (env): GH_TOKEN BENCH_CACHE_KEY BENCH_SIDE GITHUB_API_URL GITHUB_REPOSITORY
 set -uo pipefail
 
-: "${GH_TOKEN:?}" "${BENCH_CACHE_KEY:?}" "${GITHUB_API_URL:?}" "${GITHUB_REPOSITORY:?}"
+: "${GH_TOKEN:?}" "${BENCH_CACHE_KEY:?}" "${BENCH_SIDE:?}" "${GITHUB_API_URL:?}" "${GITHUB_REPOSITORY:?}"
+case "$BENCH_SIDE" in
+  github|codemany) ;;
+  *) echo "::error::unknown BENCH_SIDE '$BENCH_SIDE'"; exit 1 ;;
+esac
 
-# -w prints the status even on 4xx/5xx (no -f); curl itself failing leaves "000".
+# -w prints the status even on 4xx/5xx (no -f); curl itself failing prints "000".
 code=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE -G \
   -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
   --data-urlencode "key=$BENCH_CACHE_KEY" \
   "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/caches") || code="${code:-000}"
 
-case "$code" in
-  2??) echo "deleted cache entry $BENCH_CACHE_KEY" ;;
-  404) echo "no GitHub cache entry $BENCH_CACHE_KEY (nothing to delete)" ;;
-  *)   echo "::warning::could not delete cache entry $BENCH_CACHE_KEY (HTTP $code)" ;;
+case "$BENCH_SIDE:$code" in
+  *:2??)         echo "deleted cache entry $BENCH_CACHE_KEY" ;;
+  codemany:404)  echo "no GitHub cache entry $BENCH_CACHE_KEY: Codemany's job cache held it" ;;
+  *)             echo "::warning::could not delete cache entry $BENCH_CACHE_KEY (HTTP $code)" ;;
 esac
 exit 0
