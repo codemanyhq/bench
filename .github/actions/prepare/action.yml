@@ -170,6 +170,17 @@ runs:
         HIT: ${{ steps.restore.outputs.cache-hit }}
       run: echo "BENCH_CACHE_HIT=${HIT:-false}" >> "$GITHUB_ENV"
 
+    # 2026-11-07 (CMY-99): a warm job with no saved files would time a cold build as
+    # "warm" (run 42221135215: Codemany's Excalidraw warm ran before its refused cold job
+    # was re-run, 55 s vs GitHub's restored 8 s). Fail here instead, before `build`: the
+    # job is red, not a fake number, and a re-run of the cold job re-runs it (bench.yml).
+    - name: require saved files
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "::error::no saved files for $BENCH_CACHE_KEY: this run's cold job did not save them (failed, refused or not run yet). Re-run the failed jobs; the cold job runs first."
+        exit 1
+
     # 2026-11-02: per-run entries are used once; delete this one now so the next
     # projects' saves never push an unread entry out of the 10 GB (scripts/env.sh).
     # A failed delete only warns: bench.yml's plan job sweeps leftovers next run.

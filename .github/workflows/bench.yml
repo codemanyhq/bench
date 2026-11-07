@@ -25,7 +25,10 @@
 # it, deletes the entry and builds. Same on both sides. Nightly keys for both sides
 # (~14 GB) overflowed GitHub's 10 GB per repo and pushed each other out, so warm jobs
 # missed. GitHub's warm jobs wait for all its cold jobs; on Codemany (one job at a time)
-# each project's cold job runs right before its warm one (scripts/plan.sh order).
+# each project's cold job runs right before its warm one (scripts/plan.sh order), except
+# Docker projects (2026-11-07, CMY-99): their cold jobs end the codemany-linux matrix and
+# their warm jobs run in codemany-linux-late, so re-running a refused cold job re-runs
+# its warm job too. A warm job with no saved files fails before `build` (prepare).
 name: bench
 
 on:
@@ -55,6 +58,7 @@ jobs:
       github_cold: ${{ steps.plan.outputs.github_cold }}
       github_warm: ${{ steps.plan.outputs.github_warm }}
       linux: ${{ steps.plan.outputs.linux }}
+      linux_late: ${{ steps.plan.outputs.linux_late }}
       macos: ${{ steps.plan.outputs.macos }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -245,6 +249,53 @@ jobs:
         with:
           path: ${{ env.BENCH_CACHE_PATH }}   # relative per run (scripts/env.sh)
           key: ${{ env.BENCH_CACHE_KEY }}
+      - name: cleanup
+        if: always()
+        run: bash bench/scripts/cleanup.sh
+
+  # 2026-11-07 (CMY-99): Docker projects' warm jobs, after codemany-linux (whose matrix ends
+  # with their cold jobs). Their cold job may be refused on shared Docker and re-run in a
+  # job VM only after the run ends; a matrix sibling is never re-run with it, a dependant
+  # job is. Runs even when some codemany-linux job failed (a miss then fails `prepare`).
+  codemany-linux-late:
+    name: ${{ matrix.project }} · codemany · ${{ matrix.mode }}
+    needs: [plan, codemany-linux]
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.linux_late != '[]' }}
+    runs-on: [self-hosted, Linux, codemany]
+    permissions:
+      contents: read
+      actions: write   # delete the restored cache entry (prepare)
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.linux_late) }}
+    env:
+      BENCH_PROJECT: ${{ matrix.project }}
+      BENCH_MODE: ${{ matrix.mode }}
+      BENCH_SIDE: codemany
+    steps:
+      - name: docker check
+        if: matrix.lang == 'Docker'
+        run: docker buildx version
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: bench
+          persist-credentials: false
+      - name: prepare
+        uses: ./bench/.github/actions/prepare
+        with:
+          repo: ${{ matrix.repo }}
+          sha: ${{ matrix.sha }}
+          lang: ${{ matrix.lang }}
+          toolchain: ${{ matrix.toolchain }}
+      - name: cache hit   # marker for scripts/lib/cache-hit.mjs (see codemany-linux)
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
+        run: echo "restored $BENCH_CACHE_KEY"
+      - name: build
+        working-directory: src
+        run: bash ../bench/scripts/build.sh
       - name: cleanup
         if: always()
         run: bash bench/scripts/cleanup.sh
