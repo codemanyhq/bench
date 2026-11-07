@@ -9,6 +9,8 @@
 /** @typedef {import('./types.mjs').BenchSource} BenchSource */
 
 const API = process.env.GITHUB_API_URL || 'https://api.github.com';
+const RETRIES = 5;
+const RETRY_WAIT_MS = 3000;
 
 /**
  * @template T
@@ -17,16 +19,23 @@ const API = process.env.GITHUB_API_URL || 'https://api.github.com';
  * @returns {Promise<T>}
  */
 async function get(src, route) {
-  const res = await fetch(`${API}${route}`, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${src.token}`,
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'codemany-bench-collector',
-    },
-  });
-  if (!res.ok) throw new Error(`GET ${route} → HTTP ${res.status}: ${await res.text()}`);
-  return /** @type {Promise<T>} */ (res.json());
+  for (let attempt = 1; ; attempt += 1) {
+    const res = await fetch(`${API}${route}`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${src.token}`,
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'codemany-bench-collector',
+      },
+    }).catch((/** @type {Error} */ e) => e);
+    if (res instanceof Response && res.ok) return /** @type {Promise<T>} */ (res.json());
+    const why = res instanceof Response ? `HTTP ${res.status}: ${await res.text()}` : String(res);
+    // 2026-11-06: GitHub answers 502/503/504 (or drops the connection) now and then; one bad call used to fail
+    // the whole collect. Retry those up to RETRIES times with a growing wait; anything else fails at once.
+    const transient = !(res instanceof Response) || res.status >= 500;
+    if (!transient || attempt >= RETRIES) throw new Error(`GET ${route} → ${why}`);
+    await new Promise((r) => setTimeout(r, attempt * RETRY_WAIT_MS));
+  }
 }
 
 /** @param {BenchSource} src @param {number} runId @returns {Promise<ApiRun>} */
