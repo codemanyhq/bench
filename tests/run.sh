@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.." || exit 1
 failed=()
 for t in tests/*.test.sh; do
   echo "== $t"
-  bash "$t" || failed+=("$t")
+  bash "$t" </dev/null || failed+=("$t")   # never waits on the terminal
 done
 if ((${#failed[@]})); then
   printf 'FAILED: %s\n' "${failed[@]}"

@@ -20,8 +20,11 @@ case "$BENCH_SIDE" in
 esac
 
 # -w prints the status even on 4xx/5xx (no -f); curl itself failing prints "000".
-code=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE -G \
-  -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+# The token goes in on stdin (-H @-), never in argv: `ps` shows any process's arguments
+# to every local user, and public jobs on a Codemany host run as slot users side by side.
+code=$(printf 'Authorization: Bearer %s\n' "$GH_TOKEN" |
+  curl -sS -o /dev/null -w '%{http_code}' -X DELETE -G \
+  -H @- -H "Accept: application/vnd.github+json" \
   --data-urlencode "key=$BENCH_CACHE_KEY" \
   "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/caches") || code="${code:-000}"
 

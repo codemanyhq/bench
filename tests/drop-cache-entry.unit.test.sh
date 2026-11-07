@@ -10,11 +10,13 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 CURL_LOG="$WORK/curl.args"
 
-# Fake curl: one argument per line to $CURL_LOG; prints $FAKE_OUT; exits $FAKE_EXIT.
+# Fake curl: one argument per line to $CURL_LOG, its stdin to $CURL_LOG.stdin; prints
+# $FAKE_OUT; exits $FAKE_EXIT.
 mkdir -p "$WORK/bin"
 cat > "$WORK/bin/curl" <<'EOF'
 #!/usr/bin/env bash
 printf '%s\n' "$@" > "$FAKE_CURL_LOG"
+cat > "$FAKE_CURL_LOG.stdin"
 printf '%s' "$FAKE_OUT"
 exit "$FAKE_EXIT"
 EOF
@@ -66,7 +68,9 @@ args=$(cat "$CURL_LOG")
 assert_contains "DELETE method" $'-X\nDELETE' "$args"
 assert_contains "-G puts the key in the query" $'\n-G\n' "$args"
 assert_contains "key is url-encoded" $'--data-urlencode\nkey='"$KEY" "$args"
-assert_contains "bearer token header" $'-H\nAuthorization: Bearer secret-token' "$args"
+assert_contains "headers read from stdin" $'-H\n@-' "$args"
+assert_eq "bearer token on stdin" "Authorization: Bearer secret-token" "$(cat "$CURL_LOG.stdin")"
+assert_not_contains "token never in argv (ps shows it)" "secret-token" "$args"
 assert_contains "API version header" $'-H\nAccept: application/vnd.github+json' "$args"
 assert_contains "endpoint" "https://api.github.com/repos/codemanyhq/bench/actions/caches" "$args"
 assert_contains "status via -w" $'-w\n%{http_code}' "$args"

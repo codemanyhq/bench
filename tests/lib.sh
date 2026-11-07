@@ -27,10 +27,12 @@ assert_not_contains() {
 }
 
 # Clean env for drop-cache-entry.sh: only what the prepare step gives it, plus overrides.
+# stdin is /dev/null, so a regression that stops piping the token to curl fails (empty
+# stdin) instead of hanging on the terminal.
 # Usage: run_drop VAR=value ... ; sets OUT (stdout+stderr) and RC.
 # shellcheck disable=SC2034 # OUT and RC are read by the sourcing test files
 run_drop() {
-  OUT=$(env -i PATH="${TEST_PATH:-$PATH}" HOME="${HOME:-/tmp}" "$@" bash "$DROP_SCRIPT" 2>&1)
+  OUT=$(env -i PATH="${TEST_PATH:-$PATH}" HOME="${HOME:-/tmp}" "$@" bash "$DROP_SCRIPT" </dev/null 2>&1)
   RC=$?
 }
 
