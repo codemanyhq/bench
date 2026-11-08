@@ -13,7 +13,8 @@
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { replaceBlock } from './lib/blocks.mjs';
-import { ROOT, dataDir, readJson, writeText } from './lib/files.mjs';
+import { ROOT, dataDir, readJson, writeJson, writeText } from './lib/files.mjs';
+import { kitNumbers } from './lib/kit-numbers.mjs';
 import { loadModules } from './lib/modules.mjs';
 import { placeholderSVG } from './lib/placeholder.mjs';
 import { codeResultsBlock } from './lib/results-code-md.mjs';
@@ -21,6 +22,7 @@ import { NO_RESULTS, resultsBlock } from './lib/results-md.mjs';
 import { summarizeAll } from './lib/summaries.mjs';
 import { computersTable, projectsTable } from './lib/tables.mjs';
 
+/** @typedef {import('./lib/kit-numbers.mjs').KitNumbers} KitNumbers */
 /** @typedef {import('./lib/types.mjs').BenchModules} BenchModules */
 /** @typedef {import('./lib/types.mjs').Hardware} Hardware */
 /** @typedef {import('./lib/types.mjs').Project} Project */
@@ -58,7 +60,7 @@ function draw(m, d) {
   // 2026-11-01: private code first when the site module knows about code (summaries.mjs).
   const sums = summarizeAll(m, d.results, published, d.hardware, now);
   const { cold, warm } = sums.main;
-  if (!hasNumbers(cold) && !hasNumbers(warm)) return { files: placeholderCharts(), block: NO_RESULTS };
+  if (!hasNumbers(cold) && !hasNumbers(warm)) return { files: placeholderCharts(), block: NO_RESULTS, kit: null };
   const files = placeholderCharts();
   for (const theme of THEMES) {
     if (hasNumbers(cold)) files.set(`speed-cold-${theme}.svg`, m.chart.barsSVG(cold, { width: WIDTH, theme }));
@@ -73,12 +75,13 @@ function draw(m, d) {
   const block = sums.publicCode
     ? codeResultsBlock(sums.main, sums.publicCode, m.data, now)
     : resultsBlock(cold, warm, m.data);
-  return { files, block };
+  // 2026-11-08: launch-kit numbers for the nightly kit agent (lib/kit-numbers.mjs).
+  return { files, block, kit: kitNumbers(cold, now) };
 }
 
-/** @returns {Promise<{ files: Map<string, string>, block: string } | null>} null = keep old files */
+/** @returns {Promise<{ files: Map<string, string>, block: string, kit: KitNumbers|null } | null>} null = keep old files */
 async function chartsAndBlock(/** @type {Data} */ d) {
-  if (d.results.runs.length === 0) return { files: placeholderCharts(), block: NO_RESULTS };
+  if (d.results.runs.length === 0) return { files: placeholderCharts(), block: NO_RESULTS, kit: null };
   try {
     return draw(await loadModules(), d);
   } catch (err) {
@@ -103,6 +106,7 @@ async function main() {
   if (out) {
     for (const [name, svg] of out.files) await writeText(path.join(CHARTS, name), svg);
     readme = replaceBlock(readme, 'bench', out.block);
+    if (out.kit) await writeJson(path.join(dataDir(), 'kit.json'), out.kit);
   }
   await writeText(README, readme);
   console.log(out ? `rendered ${out.files.size} charts` : 'README fact tables updated; charts kept');
