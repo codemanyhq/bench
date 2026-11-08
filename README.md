@@ -93,10 +93,10 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 
 | Project | GitHub | Waited | Codemany | Waited | Result |
 | --- | --- | --- | --- | --- | --- |
-| ripgrep | 29s | 2s | 13s | 2s | 2.2× faster |
-| Hugo | 1m 16s | 2s | 32s | 1m 24s | 2.4× faster |
-| react.dev | 1m 59s | 2s | 1m 23s | 3m 21s | 1.4× faster |
-| Excalidraw | 1m 17s | 2s | 1m 10s | 7m 34s | 1.1× faster |
+| ripgrep | 29s | 2s | 13s | 1s | 2.2× faster |
+| Hugo | 1m 16s | 2s | 32s | 1m 20s | 2.4× faster |
+| react.dev | 2m 00s | 2s | 1m 23s | 3m 20s | 1.4× faster |
+| Excalidraw | 1m 17s | 2s | 1m 10s | 7m 15s | 1.1× faster |
 | SwiftLint | 13m 55s | 2s | 4m 29s | 2s | 3.1× faster |
 
 ### Public code (free on GitHub), with saved files
@@ -105,8 +105,8 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 | --- | --- | --- | --- | --- | --- |
 | ripgrep | 12s | 0s | 5s | 0s | 2.4× faster |
 | Hugo | 2s | 0s | 2s | 0s | about the same |
-| react.dev | 1m 13s | 1s | 36s | 2m 09s | 2.0× faster |
-| Excalidraw | 1m 38s | 2s | 1m 21s | 10m 14s | 1.2× faster |
+| react.dev | 1m 13s | 0s | 35s | 0s | 2.1× faster |
+| Excalidraw | 56s | 2s | 56s | 9m 46s | about the same |
 | SwiftLint | 4m 07s | 0s | 5m 17s | 0s | 1.3× slower |
 
 ¹ What one GitHub build costs for private code, at the prices in [The computers](#the-computers). Public code is free.
