@@ -176,7 +176,7 @@ runs:
 
     - name: restore cache (again)
       id: restore2
-      if: steps.wait1.outcome == 'success'
+      if: env.BENCH_MODE == 'warm' && steps.wait1.outcome == 'success'
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ env.BENCH_CACHE_PATH }}
@@ -190,7 +190,7 @@ runs:
 
     - name: restore cache (last try)
       id: restore3
-      if: steps.wait2.outcome == 'success'
+      if: env.BENCH_MODE == 'warm' && steps.wait2.outcome == 'success'
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ env.BENCH_CACHE_PATH }}
