@@ -21,12 +21,13 @@ export function resultsBlock(cold, warm, fmt) {
   const updated = (cold.updatedAt ?? '').slice(0, 10);
   const view = plainView(fmt);
   return [
-    `Time to build each project from scratch (the middle of the last ${cold.windowDays} nights). Updated ${updated}.`,
+    `Time to build each project from scratch (the middle of every run in the last ${cold.windowDays} days). Updated ${updated}.`,
     '',
     simpleTable(cold, fmt, view),
     '',
-    // 2026-11-06: night by night is always shown (no longer folded).
-    `### Every night, the last ${cold.windowDays} days (from scratch)`,
+    // 2026-11-06: run by run is always shown (no longer folded). 2026-11-09: runs, not nights:
+    // extra runs during the day count the same as the nightly one (codemany.com bench-data.js).
+    `### Run by run, the last 30 runs (from scratch)`,
     '',
     ...trendPictures(cold),
     '<details>',

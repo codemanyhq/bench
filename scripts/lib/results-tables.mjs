@@ -63,9 +63,9 @@ export function modeTable(s, fmt, view) {
   );
 }
 
-/** One night-by-night chart per project that has a trend. @param {Summary} s */
+/** One run-by-run chart per project that has a trend (2026-11-09: runs, not nights). @param {Summary} s */
 export function trendPictures(s) {
   return s.projects
     .filter((p) => p.trend.length > 0)
-    .flatMap((p) => [`**${p.name}**`, '', picture(`charts/trend-${p.id}`, `${p.name}: build time per night`), '']);
+    .flatMap((p) => [`**${p.name}**`, '', picture(`charts/trend-${p.id}`, `${p.name}: build time per run`), '']);
 }
