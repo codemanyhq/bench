@@ -163,11 +163,29 @@ runs:
         path: ${{ env.BENCH_CACHE_PATH }}
         key: ${{ env.BENCH_CACHE_KEY }}
 
+    # 2026-11-09: a cold job's saved files can take a moment to show on another machine
+    # (run 42610365978: firefox-ios saved 3 GB on the Mac mini at 11:51:11; the warm job on
+    # another Mac looked at 11:51:47 and missed). Wait once and look again before failing.
+    - name: wait for saved files
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "::warning::no saved files yet for $BENCH_CACHE_KEY; looking again in 120 s"
+        sleep 120
+
+    - name: restore cache (second look)
+      id: restore2
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit != 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.BENCH_CACHE_PATH }}
+        key: ${{ env.BENCH_CACHE_KEY }}
+
     - name: remember cache hit
       if: env.BENCH_MODE == 'warm'
       shell: bash
       env:
-        HIT: ${{ steps.restore.outputs.cache-hit }}
+        HIT: ${{ steps.restore.outputs.cache-hit == 'true' || steps.restore2.outputs.cache-hit == 'true' }}
       run: echo "BENCH_CACHE_HIT=${HIT:-false}" >> "$GITHUB_ENV"
 
     # 2026-11-07 (CMY-99): a warm job with no saved files would time a cold build as
@@ -175,7 +193,7 @@ runs:
     # was re-run, 55 s vs GitHub's restored 8 s). Fail here instead, before `build`: the
     # job is red, not a fake number, and a re-run of the cold job re-runs it (bench.yml).
     - name: require saved files
-      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit != 'true'
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && env.BENCH_CACHE_HIT != 'true'
       shell: bash
       run: |
         echo "::error::no saved files for $BENCH_CACHE_KEY: this run's cold job did not save them (failed, refused or not run yet). Re-run the failed jobs; the cold job runs first."
@@ -186,7 +204,7 @@ runs:
     # A failed delete only warns: bench.yml's plan job sweeps leftovers next run.
     # 2026-11-07 (CMY-97): on Codemany a 404 is expected (its job cache held the entry).
     - name: drop used cache entry
-      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit == 'true'
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && env.BENCH_CACHE_HIT == 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
