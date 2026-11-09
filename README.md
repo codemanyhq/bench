@@ -24,41 +24,41 @@ Time to build each project from scratch, for **private code** (the middle of the
 
 Public code? GitHub runs it for free, on a bigger Linux computer. See **More numbers**.
 
-### Every night, the last 30 days (private code, from scratch)
+### Run by run, the last 30 runs (private code, from scratch)
 
 **ripgrep**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="charts/trend-ripgrep-dark.svg">
-  <img alt="ripgrep: build time per night" src="charts/trend-ripgrep-light.svg">
+  <img alt="ripgrep: build time per run" src="charts/trend-ripgrep-light.svg">
 </picture>
 
 **Hugo**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="charts/trend-hugo-dark.svg">
-  <img alt="Hugo: build time per night" src="charts/trend-hugo-light.svg">
+  <img alt="Hugo: build time per run" src="charts/trend-hugo-light.svg">
 </picture>
 
 **react.dev**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="charts/trend-react-dev-dark.svg">
-  <img alt="react.dev: build time per night" src="charts/trend-react-dev-light.svg">
+  <img alt="react.dev: build time per run" src="charts/trend-react-dev-light.svg">
 </picture>
 
 **Excalidraw**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="charts/trend-excalidraw-dark.svg">
-  <img alt="Excalidraw: build time per night" src="charts/trend-excalidraw-light.svg">
+  <img alt="Excalidraw: build time per run" src="charts/trend-excalidraw-light.svg">
 </picture>
 
 **SwiftLint**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="charts/trend-swiftlint-dark.svg">
-  <img alt="SwiftLint: build time per night" src="charts/trend-swiftlint-light.svg">
+  <img alt="SwiftLint: build time per run" src="charts/trend-swiftlint-light.svg">
 </picture>
 
 <details>
@@ -169,14 +169,14 @@ We show the real time and the real price. We don't make GitHub or Codemany look 
 | [react.dev](https://github.com/reactjs/react.dev) | Next.js | Linux | `yarn install --frozen-lockfile && next build` | [`0821e7d`](https://github.com/reactjs/react.dev/commit/0821e7d9428a6c58c922765b891bbffba9ed6249) |
 | [Excalidraw](https://github.com/excalidraw/excalidraw) | Docker | Linux | `docker build -t excalidraw .` | [`a758e93`](https://github.com/excalidraw/excalidraw/commit/a758e93d6a03e9f995973703cb886850a398a6d3) |
 | [SwiftLint](https://github.com/realm/SwiftLint) | Swift | macOS | `swift build -c release --product swiftlint` | [`ec4691d`](https://github.com/realm/SwiftLint/commit/ec4691d9e813a1d3358e82917326b56b0a71d3c9) |
-| [TypeScript 7 compiler](https://github.com/microsoft/TypeScript) *(new: results appear after 3 clean nights)* | Node.js | Linux | `npm ci && npx hereby build` | [`6161772`](https://github.com/microsoft/TypeScript/commit/6161772c1370bdd4a82f808e6823bd755eb1870d) |
-| [Ruff](https://github.com/astral-sh/ruff) *(new: results appear after 3 clean nights)* | Rust | Linux | `cargo build --release --locked --bin ruff` | [`049c351`](https://github.com/astral-sh/ruff/commit/049c351befba87447d3d50a2ee3d617ce3c2a264) |
-| [Django tests](https://github.com/django/django) *(new: results appear after 3 clean nights)* | Python | Linux | `pip install -r tests/requirements/py3-free-threading.txt -e . && python -Wall tests/runtests.py` | [`a05e16a`](https://github.com/django/django/commit/a05e16a7230fe33d3f43f4a3aaed103cebb42efc) |
-| [Kubernetes (kubectl)](https://github.com/kubernetes/kubernetes) *(new: results appear after 3 clean nights)* | Go | Linux | `make WHAT=cmd/kubectl` | [`aa8de06`](https://github.com/kubernetes/kubernetes/commit/aa8de068063335aee4a78589ee0d5c70b448e266) |
-| [Firefox for iOS](https://github.com/mozilla-mobile/firefox-ios) *(new: results appear after 3 clean nights)* | iOS | macOS | `./bootstrap.sh firefox && xcodebuild build-for-testing -scheme Fennec (iOS Simulator)` | [`167e2d2`](https://github.com/mozilla-mobile/firefox-ios/commit/167e2d22f55c47bcaad32dd5d95804b7f7a924a6) |
-| [Composable Architecture tests](https://github.com/pointfreeco/swift-composable-architecture) *(new: results appear after 3 clean nights)* | Swift | macOS | `xcodebuild test -scheme ComposableArchitecture -destination platform=macOS` | [`bb175b5`](https://github.com/pointfreeco/swift-composable-architecture/commit/bb175b544d019c7f23a2e41ae29d8c70592aeb58) |
-| [Now in Android](https://github.com/android/nowinandroid) *(new: results appear after 3 clean nights)* | Android | Linux | `./gradlew :app:assemble -PminifyWithR8=false` | [`2982e63`](https://github.com/android/nowinandroid/commit/2982e63cb691ad49cd009aab43dc206fee6699c2) |
-| [Neovim](https://github.com/neovim/neovim) *(new: results appear after 3 clean nights)* | C | Linux | `cmake --preset ci -D CMAKE_BUILD_TYPE=Release && cmake --build build` | [`2fc7032`](https://github.com/neovim/neovim/commit/2fc7032df9e7b7e4d625cc205a5ff9cdb0f02b27) |
+| [TypeScript 7 compiler](https://github.com/microsoft/TypeScript) *(new: results appear after 3 clean runs)* | Node.js | Linux | `npm ci && npx hereby build` | [`6161772`](https://github.com/microsoft/TypeScript/commit/6161772c1370bdd4a82f808e6823bd755eb1870d) |
+| [Ruff](https://github.com/astral-sh/ruff) *(new: results appear after 3 clean runs)* | Rust | Linux | `cargo build --release --locked --bin ruff` | [`049c351`](https://github.com/astral-sh/ruff/commit/049c351befba87447d3d50a2ee3d617ce3c2a264) |
+| [Django tests](https://github.com/django/django) *(new: results appear after 3 clean runs)* | Python | Linux | `pip install -r tests/requirements/py3-free-threading.txt -e . && python -Wall tests/runtests.py` | [`a05e16a`](https://github.com/django/django/commit/a05e16a7230fe33d3f43f4a3aaed103cebb42efc) |
+| [Kubernetes (kubectl)](https://github.com/kubernetes/kubernetes) *(new: results appear after 3 clean runs)* | Go | Linux | `make WHAT=cmd/kubectl` | [`aa8de06`](https://github.com/kubernetes/kubernetes/commit/aa8de068063335aee4a78589ee0d5c70b448e266) |
+| [Firefox for iOS](https://github.com/mozilla-mobile/firefox-ios) *(new: results appear after 3 clean runs)* | iOS | macOS | `./bootstrap.sh firefox && xcodebuild build-for-testing -scheme Fennec (iOS Simulator)` | [`167e2d2`](https://github.com/mozilla-mobile/firefox-ios/commit/167e2d22f55c47bcaad32dd5d95804b7f7a924a6) |
+| [Composable Architecture tests](https://github.com/pointfreeco/swift-composable-architecture) *(new: results appear after 3 clean runs)* | Swift | macOS | `xcodebuild test -scheme ComposableArchitecture -destination platform=macOS` | [`bb175b5`](https://github.com/pointfreeco/swift-composable-architecture/commit/bb175b544d019c7f23a2e41ae29d8c70592aeb58) |
+| [Now in Android](https://github.com/android/nowinandroid) *(new: results appear after 3 clean runs)* | Android | Linux | `./gradlew :app:assemble -PminifyWithR8=false` | [`2982e63`](https://github.com/android/nowinandroid/commit/2982e63cb691ad49cd009aab43dc206fee6699c2) |
+| [Neovim](https://github.com/neovim/neovim) *(new: results appear after 3 clean runs)* | C | Linux | `cmake --preset ci -D CMAKE_BUILD_TYPE=Release && cmake --build build` | [`2fc7032`](https://github.com/neovim/neovim/commit/2fc7032df9e7b7e4d625cc205a5ff9cdb0f02b27) |
 <!-- projects:end -->
 
 ### From scratch, and with saved files
