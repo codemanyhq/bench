@@ -59,8 +59,8 @@ export function codeResultsBlock(priv, pub, fmt, now) {
     ...(standIn ? [`† Timed on GitHub's public 4-core computer. Private times arrive ${nextPrivateRun(now)}.`, ''] : []),
     'Public code? GitHub runs it for free, on a bigger Linux computer. See **More numbers**.',
     '',
-    // 2026-11-06: night by night is always shown (no longer folded), so readers see the bench runs every night.
-    `### Every night, the last ${priv.cold.windowDays} days (private code, from scratch)`,
+    // 2026-11-06: run by run is always shown (no longer folded). 2026-11-09: runs, not nights.
+    `### Run by run, the last 30 runs (private code, from scratch)`,
     '',
     ...trendPictures(priv.cold),
     '<details>',

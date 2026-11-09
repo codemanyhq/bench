@@ -12,7 +12,7 @@
 /** @typedef {import('./types.mjs').Summary} Summary */
 /** @typedef {import('./types.mjs').Os} Os */
 
-/** One bar on the kit's private card. @typedef {{ name: string, os: Os, speedup: number, nights: number }} KitRow */
+/** One bar on the kit's private card. @typedef {{ name: string, os: Os, speedup: number, runs: number }} KitRow */
 
 /**
  * Values for the kit's <!--b:KEY--> markers, exactly as the page shows them.
@@ -21,7 +21,7 @@
  * @property {string} privbars     HTML bar rows, fastest first
  * @property {string} privrange    e.g. "1.2× to 3.4×"
  * @property {string} privrangex   same with a plain x, for plain-text channels
- * @property {string} privpairs    matched Linux nights, e.g. "2" or "1–2"
+ * @property {string} privpairs    matched Linux runs, e.g. "2" or "1–2"
  * @property {string} privnote     one-line footnote under the bars
  */
 
@@ -31,13 +31,13 @@ const f1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
 /** "2" when all equal, else "min–max". @param {number[]} a */
 const span = (a) => (Math.min(...a) === Math.max(...a) ? `${Math.min(...a)}` : `${Math.min(...a)}–${Math.max(...a)}`);
 
-/** Projects with a speedup, fastest first; nights = the smaller side's matched count. @param {Summary} s @returns {KitRow[]} */
+/** Projects with a speedup, fastest first; runs = the smaller side's matched count (2026-11-09: runs, not nights). @param {Summary} s @returns {KitRow[]} */
 function rows(s) {
   /** @type {KitRow[]} */
   const out = [];
   for (const p of s.projects) {
     if (p.speedup == null || !p.github || !p.codemany) continue;
-    out.push({ name: p.name, os: p.os, speedup: p.speedup, nights: Math.min(p.github.n, p.codemany.n) });
+    out.push({ name: p.name, os: p.os, speedup: p.speedup, runs: Math.min(p.github.n, p.codemany.n) });
   }
   return out.sort((a, b) => b.speedup - a.speedup);
 }
@@ -55,9 +55,9 @@ export function kitNumbers(cold, now) {
   const r = rows(cold);
   if (r.length === 0) return null;
   const top = r[0].speedup, low = r[r.length - 1].speedup;
-  const lin = r.filter((x) => x.os === 'linux').map((x) => x.nights);
-  const mac = r.filter((x) => x.os === 'macos').map((x) => `${x.name} on ${x.nights}`).join(', ');
-  const linPart = lin.length ? `Linux rests on ${span(lin)} matched nights so far (private Linux timed nightly since Nov 7)` : 'No Linux pairs yet';
+  const lin = r.filter((x) => x.os === 'linux').map((x) => x.runs);
+  const mac = r.filter((x) => x.os === 'macos').map((x) => `${x.name} on ${x.runs}`).join(', ');
+  const linPart = lin.length ? `Linux rests on ${span(lin)} matched runs so far (private Linux timed since Nov 7)` : 'No Linux pairs yet';
   const head = cold.overall.speedup == null ? '' : ` Site headline: ${f1(cold.overall.speedup)}×.`;
   return {
     updatedAt: cold.updatedAt ?? now.toISOString(),  // data time, so no-op renders make no commit
