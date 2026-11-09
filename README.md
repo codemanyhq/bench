@@ -16,11 +16,11 @@ Time to build each project from scratch, for **private code** (the middle of the
 
 | Project | GitHub | Codemany | Codemany is… | Check it |
 | --- | --- | --- | --- | --- |
-| ripgrep | 42s | 12s | **3.5× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129323164092) |
-| Hugo | 2m 01s | 30s | **4.0× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129323098916) |
-| react.dev | 3m 03s | 1m 26s | **2.1× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129323099243) |
-| Excalidraw | 1m 50s | 1m 11s | **1.5× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129323102096) |
-| SwiftLint | 13m 55s | 4m 29s | **3.1× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129323099190) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129323099292) |
+| ripgrep | 42s | 12s | **3.5× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129324847221) |
+| Hugo | 2m 01s | 30s | **4.0× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129324781063) |
+| react.dev | 3m 03s | 1m 26s | **2.1× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129324781643) |
+| Excalidraw | 1m 50s | 1m 11s | **1.5× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129324787190) |
+| SwiftLint | 13m 55s | 4m 29s | **3.1× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129324781860) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42610365978/job/129324836194) |
 
 Public code? GitHub runs it for free, on a bigger Linux computer. See **More numbers**.
 
