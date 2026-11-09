@@ -163,19 +163,55 @@ runs:
         path: ${{ env.BENCH_CACHE_PATH }}
         key: ${{ env.BENCH_CACHE_KEY }}
 
+    # 2026-11-09 (bench run 42666681693): on Codemany a big entry the cold job saved on
+    # ANOTHER Mac is readable only once its upload commits (firefox-ios: 2.76 GiB, ~4 min);
+    # the restore gives up sooner and misses. GitHub's cache has it the moment the save
+    # step ends, so wait (untimed, before `build`) and ask twice more: the published build
+    # time is unchanged, and a warm job is never failed for an upload still in flight.
+    - name: wait for the cold job's upload
+      id: wait1
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: sleep 150
+
+    - name: restore cache (again)
+      id: restore2
+      if: steps.wait1.outcome == 'success'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.BENCH_CACHE_PATH }}
+        key: ${{ env.BENCH_CACHE_KEY }}
+
+    - name: wait once more
+      id: wait2
+      if: steps.wait1.outcome == 'success' && steps.restore2.outputs.cache-hit != 'true'
+      shell: bash
+      run: sleep 150
+
+    - name: restore cache (last try)
+      id: restore3
+      if: steps.wait2.outcome == 'success'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.BENCH_CACHE_PATH }}
+        key: ${{ env.BENCH_CACHE_KEY }}
+
     - name: remember cache hit
+      id: hit
       if: env.BENCH_MODE == 'warm'
       shell: bash
       env:
-        HIT: ${{ steps.restore.outputs.cache-hit }}
-      run: echo "BENCH_CACHE_HIT=${HIT:-false}" >> "$GITHUB_ENV"
+        HIT: ${{ steps.restore.outputs.cache-hit == 'true' || steps.restore2.outputs.cache-hit == 'true' || steps.restore3.outputs.cache-hit == 'true' }}
+      run: |
+        echo "BENCH_CACHE_HIT=$HIT" >> "$GITHUB_ENV"
+        echo "hit=$HIT" >> "$GITHUB_OUTPUT"
 
     # 2026-11-07 (CMY-99): a warm job with no saved files would time a cold build as
     # "warm" (run 42221135215: Codemany's Excalidraw warm ran before its refused cold job
     # was re-run, 55 s vs GitHub's restored 8 s). Fail here instead, before `build`: the
     # job is red, not a fake number, and a re-run of the cold job re-runs it (bench.yml).
     - name: require saved files
-      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit != 'true'
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.hit.outputs.hit != 'true'
       shell: bash
       run: |
         echo "::error::no saved files for $BENCH_CACHE_KEY: this run's cold job did not save them (failed, refused or not run yet). Re-run the failed jobs; the cold job runs first."
@@ -186,7 +222,7 @@ runs:
     # A failed delete only warns: bench.yml's plan job sweeps leftovers next run.
     # 2026-11-07 (CMY-97): on Codemany a 404 is expected (its job cache held the entry).
     - name: drop used cache entry
-      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.restore.outputs.cache-hit == 'true'
+      if: env.BENCH_MODE == 'warm' && env.BENCH_CACHE_SCOPE == 'run' && steps.hit.outputs.hit == 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
