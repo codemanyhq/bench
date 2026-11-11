@@ -16,10 +16,10 @@ Time to build each project from scratch, for **private code** (the middle of the
 
 | Project | GitHub | Codemany | Codemany is… | Check it |
 | --- | --- | --- | --- | --- |
-| ripgrep | 42s | 13s | **3.2× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129816048753) |
-| Hugo | 2m 01s | 30s | **4.0× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129815996382) |
-| react.dev | 2m 52s | 1m 22s | **2.1× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129815996860) |
-| Excalidraw | 1m 48s | 1m 13s | **1.5× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129815997405) |
+| ripgrep | 44s | 13s | **3.3× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/43008288526/job/130481245052) |
+| Hugo | 2m 08s | 30s | **4.3× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/43008288526/job/130481244830) |
+| react.dev | 2m 52s | 1m 22s | **2.1× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/43008288526/job/130481244920) |
+| Excalidraw | 1m 50s | 1m 11s | **1.5× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/43008288526/job/130481248130) |
 | SwiftLint | 14m 21s | 3m 50s | **3.8× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/43008288526/job/130481244678) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/43008288526/job/130481244463) |
 
 Public code? GitHub runs it for free, on a bigger Linux computer. See **More numbers**.
@@ -68,10 +68,10 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 
 | Project | GitHub | Waited | Codemany | Waited | Result | GitHub price¹ |
 | --- | --- | --- | --- | --- | --- | --- |
-| ripgrep | 42s | 2s | 13s | 0s | 3.2× faster | $0.01 |
-| Hugo | 2m 01s | 2s | 30s | 0s | 4.0× faster | $0.02 |
-| react.dev | 2m 52s | 3s | 1m 22s | 0s | 2.1× faster | $0.02 |
-| Excalidraw | 1m 48s | 3s | 1m 13s | 27s | 1.5× faster | $0.01 |
+| ripgrep | 44s | 2s | 13s | 0s | 3.3× faster | $0.01 |
+| Hugo | 2m 08s | 2s | 30s | 0s | 4.3× faster | $0.02 |
+| react.dev | 2m 52s | 2s | 1m 22s | 0s | 2.1× faster | $0.02 |
+| Excalidraw | 1m 50s | 3s | 1m 11s | 40s | 1.5× faster | $0.01 |
 | SwiftLint | 14m 21s | 0s | 3m 50s | 0s | 3.8× faster | $0.92 |
 
 ### Private code, with saved files
@@ -83,9 +83,9 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 
 | Project | GitHub | Waited | Codemany | Waited | Result | GitHub price¹ |
 | --- | --- | --- | --- | --- | --- | --- |
-| ripgrep | 20s | 2s | 5s | 0s | 3.9× faster | <$0.01 |
+| ripgrep | 20s | 2s | 5s | 0s | 4.0× faster | <$0.01 |
 | Hugo | 4s | 2s | 2s | 0s | 2.0× faster | <$0.01 |
-| react.dev | 1m 50s | 2s | 35s | 0s | 3.1× faster | $0.02 |
+| react.dev | 1m 47s | 2s | 35s | 0s | 3.1× faster | $0.02 |
 | Excalidraw | 6s | 2s | 2s | 3m 48s | 3.0× faster | <$0.01 |
 | SwiftLint | 4m 12s | 0s | 5m 22s | 0s | 1.3× slower | $0.30 |
 
