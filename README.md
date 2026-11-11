@@ -12,7 +12,7 @@ Every run, we build the same code twice: once on GitHub's computer, once on a sm
 ## Who is faster?
 
 <!-- bench:start -->
-Time to build each project from scratch, for **private code** (the middle of the last 30 days). Updated 2026-11-10.
+Time to build each project from scratch, for **private code** (the middle of the last 30 days). Updated 2026-11-11.
 
 | Project | GitHub | Codemany | Codemany is… | Check it |
 | --- | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ Time to build each project from scratch, for **private code** (the middle of the
 | Hugo | 2m 01s | 30s | **4.0× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129815996382) |
 | react.dev | 2m 52s | 1m 22s | **2.1× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129815996860) |
 | Excalidraw | 1m 48s | 1m 13s | **1.5× faster** | GitHub (private run) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129815997405) |
-| SwiftLint | 14m 10s | 4m 00s | **3.5× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129816055025) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/42805942110/job/129815994587) |
+| SwiftLint | 14m 21s | 3m 50s | **3.8× faster** | [GitHub](https://github.com/codemanyhq/bench/actions/runs/43008288526/job/130481244678) · [Codemany](https://github.com/codemanyhq/bench/actions/runs/43008288526/job/130481244463) |
 
 Public code? GitHub runs it for free, on a bigger Linux computer. See **More numbers**.
 
@@ -72,7 +72,7 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 | Hugo | 2m 01s | 2s | 30s | 0s | 4.0× faster | $0.02 |
 | react.dev | 2m 52s | 3s | 1m 22s | 0s | 2.1× faster | $0.02 |
 | Excalidraw | 1m 48s | 3s | 1m 13s | 27s | 1.5× faster | $0.01 |
-| SwiftLint | 14m 10s | 0s | 4m 00s | 0s | 3.5× faster | $0.90 |
+| SwiftLint | 14m 21s | 0s | 3m 50s | 0s | 3.8× faster | $0.92 |
 
 ### Private code, with saved files
 
@@ -87,27 +87,27 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 | Hugo | 4s | 2s | 2s | 0s | 2.0× faster | <$0.01 |
 | react.dev | 1m 50s | 2s | 35s | 0s | 3.1× faster | $0.02 |
 | Excalidraw | 6s | 2s | 2s | 3m 48s | 3.0× faster | <$0.01 |
-| SwiftLint | 4m 17s | 0s | 5m 26s | 0s | 1.3× slower | $0.31 |
+| SwiftLint | 4m 12s | 0s | 5m 22s | 0s | 1.3× slower | $0.30 |
 
 ### Public code (free on GitHub), from scratch
 
 | Project | GitHub | Waited | Codemany | Waited | Result |
 | --- | --- | --- | --- | --- | --- |
 | ripgrep | 29s | 0s | 13s | 0s | 2.2× faster |
-| Hugo | 1m 18s | 0s | 31s | 0s | 2.5× faster |
+| Hugo | 1m 19s | 0s | 31s | 0s | 2.5× faster |
 | react.dev | 1m 58s | 0s | 1m 23s | 0s | 1.4× faster |
-| Excalidraw | 1m 17s | 0s | 1m 10s | 54s | 1.1× faster |
-| SwiftLint | 14m 10s | 0s | 4m 00s | 0s | 3.5× faster |
+| Excalidraw | 1m 17s | 0s | 1m 10s | 56s | 1.1× faster |
+| SwiftLint | 14m 21s | 0s | 3m 50s | 0s | 3.8× faster |
 
 ### Public code (free on GitHub), with saved files
 
 | Project | GitHub | Waited | Codemany | Waited | Result |
 | --- | --- | --- | --- | --- | --- |
-| ripgrep | 12s | 0s | 5s | 0s | 2.3× faster |
+| ripgrep | 12s | 0s | 5s | 0s | 2.4× faster |
 | Hugo | 2s | 0s | 2s | 0s | about the same |
-| react.dev | 1m 13s | 0s | 35s | 0s | 2.1× faster |
-| Excalidraw | 8s | 0s | 2s | 1m 01s | 4.0× faster |
-| SwiftLint | 4m 17s | 0s | 5m 26s | 0s | 1.3× slower |
+| react.dev | 1m 12s | 0s | 35s | 0s | 2.1× faster |
+| Excalidraw | 8s | 1s | 2s | 55s | 4.0× faster |
+| SwiftLint | 4m 12s | 0s | 5m 22s | 0s | 1.3× slower |
 
 ¹ What one GitHub build costs for private code, at the prices in [The computers](#the-computers). Public code is free.
 
