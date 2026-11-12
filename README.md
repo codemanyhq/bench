@@ -12,7 +12,7 @@ Every run, we build the same code twice: once on GitHub's computer, once on a sm
 ## Who is faster?
 
 <!-- bench:start -->
-Time to build each project from scratch, for **private code** (the middle of the last 30 days). Updated 2026-11-11.
+Time to build each project from scratch, for **private code** (the middle of the last 30 days). Updated 2026-11-12.
 
 | Project | GitHub | Codemany | Codemany is… | Check it |
 | --- | --- | --- | --- | --- |
