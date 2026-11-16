@@ -12,7 +12,8 @@
  * codemanyhq/bench-private's bench-private.yml (side `github-private`, see lib/sources.mjs);
  * without it, those are skipped. A failing private read only warns: public results still land.
  * Per job: queueSec = created→started, jobSec = started→completed, buildSec = the
- * `build` step. Rows are deduped by job id, kept for 120 days, newest last.
+ * `build` step. Jobs of every attempt are read; one row per run/project/side/mode
+ * (lib/store.mjs), kept for 120 days, newest last.
  */
 import path from 'node:path';
 import { dataDir, readJson, writeJson } from './lib/files.mjs';
@@ -55,7 +56,7 @@ async function collectRows(src, projects) {
       console.warn(`skip ${src.repo} run ${run.id}: not a finished scheduled/dispatched ${src.workflow} run`);
       continue;
     }
-    for (const job of await listJobs(src, run.id)) {
+    for (const job of await listJobs(src, run)) {
       const row = toRow(run, job, projects);
       // Each repo may only report its own sides (bench-private can't add Codemany rows).
       if (row && src.sides.includes(row.side)) rows.push(row);
