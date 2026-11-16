@@ -179,6 +179,7 @@
  * @property {string} path
  * @property {string} event
  * @property {string} status
+ * @property {number} run_attempt  newest attempt (1 = never re-run)
  */
 
 export {};

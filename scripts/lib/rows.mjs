@@ -1,6 +1,7 @@
 // @ts-check
 /** Turns one GitHub job into one results.json row (2026-10-30; cacheHit 2026-11-02). */
 import { cacheHitOf } from './cache-hit.mjs';
+import { isStandIn } from './earlier-pass.mjs';
 
 /** @typedef {import('./types.mjs').ApiJob} ApiJob */
 /** @typedef {import('./types.mjs').ApiRun} ApiRun */
@@ -40,13 +41,16 @@ function buildSeconds(job) {
  * @param {ApiRun} run
  * @param {ApiJob} job
  * @param {Map<string, Project>} projects  by id
- * @returns {RunRow|null}  null for non-bench jobs (e.g. `plan`) and unfinished jobs
+ * @returns {RunRow|null}  null for non-bench jobs (e.g. `plan`), unfinished jobs, and
+ *   re-run jobs that skipped their build because an earlier attempt measured them
+ *   (2026-11-15, CMY-107: that attempt's row stands; lib/earlier-pass.mjs)
  */
 export function toRow(run, job, projects) {
   const name = parseJobName(job.name);
   const project = name && projects.get(name.project);
   if (!name || !project || job.status !== 'completed') return null;
   if (!job.started_at || !job.completed_at || !CONCLUSIONS.has(job.conclusion ?? '')) return null;
+  if (isStandIn(job)) return null;
   return {
     runId: run.id,
     jobId: job.id,

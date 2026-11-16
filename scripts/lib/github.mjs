@@ -43,16 +43,31 @@ export function getRun(src, runId) {
   return get(src, `/repos/${src.repo}/actions/runs/${runId}`);
 }
 
-/** Latest attempt's jobs of one run, all pages. @param {BenchSource} src @param {number} runId */
-export async function listJobs(src, runId) {
+/** One attempt's jobs of one run, all pages. @param {BenchSource} src @param {number} runId @param {number} attempt */
+async function listAttemptJobs(src, runId, attempt) {
   /** @type {ApiJob[]} */
   const jobs = [];
   for (let page = 1; ; page += 1) {
     /** @type {{ total_count: number, jobs: ApiJob[] }} */
-    const body = await get(src, `/repos/${src.repo}/actions/runs/${runId}/jobs?per_page=100&page=${page}`);
+    const body = await get(src, `/repos/${src.repo}/actions/runs/${runId}/attempts/${attempt}/jobs?per_page=100&page=${page}`);
     jobs.push(...body.jobs);
     if (body.jobs.length < 100 || jobs.length >= body.total_count) return jobs;
   }
+}
+
+/**
+ * Jobs of EVERY attempt of one run (2026-11-15, CMY-107; was the latest attempt only). A
+ * re-run warm job skips its build when an earlier attempt measured it, so that earlier
+ * attempt's row must be read too, even when collect first sees the run after its re-run.
+ * lib/store.mjs keeps one row per slot. @param {BenchSource} src @param {ApiRun} run
+ */
+export async function listJobs(src, run) {
+  const attempts = run.run_attempt;
+  if (!Number.isInteger(attempts) || attempts < 1) throw new Error(`run ${run.id}: bad run_attempt ${attempts}`);
+  /** @type {ApiJob[]} */
+  const jobs = [];
+  for (let n = 1; n <= attempts; n += 1) jobs.push(...await listAttemptJobs(src, run.id, n));
+  return jobs;
 }
 
 /** Newest completed runs of the source's workflow. @param {BenchSource} src @param {number} count */

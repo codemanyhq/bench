@@ -29,6 +29,8 @@
 # Docker projects (2026-11-07, CMY-99): their cold jobs end the codemany-linux matrix and
 # their warm jobs run in codemany-linux-late, so re-running a refused cold job re-runs
 # its warm job too. A warm job with no saved files fails before `build` (prepare).
+# On a re-run attempt (2026-11-15, CMY-107), a warm job an earlier attempt already measured
+# skips prepare + build and passes (step `earlier attempt`); collect keeps that earlier row.
 name: bench
 
 on:
@@ -161,7 +163,25 @@ jobs:
         with:
           path: bench
           persist-credentials: false
+      # 2026-11-15 (CMY-107): "Re-run failed jobs" re-runs EVERY leg of a job that needs a
+      # failed one, passed legs too, but their saved files were deleted on first use (prepare).
+      # A leg an earlier attempt already measured skips prepare + build (scripts/earlier-pass.mjs)
+      # and passes; collect keeps that attempt's row (lib/rows.mjs ignores this one). Only jobs
+      # that `needs` another bench job are re-run while passed, so only they carry this step.
+      - name: earlier attempt
+        if: matrix.mode == 'warm' && github.run_attempt != '1'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          retries: 3
+          script: |
+            const { default: check } = await import(`${process.env.GITHUB_WORKSPACE}/bench/scripts/earlier-pass.mjs`);
+            await check({ github, context, core });
+      # Marker for lib/rows.mjs: runs (success) only when this attempt stands in for an earlier one.
+      - name: measured in an earlier attempt
+        if: env.BENCH_MEASURED == 'true'
+        run: echo "measured in an earlier attempt of run $GITHUB_RUN_ID; skipping prepare and build"
       - name: prepare
+        if: env.BENCH_MEASURED != 'true'
         uses: ./bench/.github/actions/prepare
         with:
           repo: ${{ matrix.repo }}
@@ -171,9 +191,10 @@ jobs:
       # 2026-11-02: marker for scripts/lib/cache-hit.mjs: this step runs (success) only when
       # a warm job really restored its cold job's cache; skipped = no restore, not "warm".
       - name: cache hit
-        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true' && env.BENCH_MEASURED != 'true'
         run: echo "restored $BENCH_CACHE_KEY"
       - name: build
+        if: env.BENCH_MEASURED != 'true'
         working-directory: src
         run: bash ../bench/scripts/build.sh
       # 2026-11-05: untimed, after `build`: write cold's Docker layers to the saved files
@@ -283,7 +304,19 @@ jobs:
         with:
           path: bench
           persist-credentials: false
+      - name: earlier attempt   # 2026-11-15 (CMY-107), see github-warm
+        if: matrix.mode == 'warm' && github.run_attempt != '1'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          retries: 3
+          script: |
+            const { default: check } = await import(`${process.env.GITHUB_WORKSPACE}/bench/scripts/earlier-pass.mjs`);
+            await check({ github, context, core });
+      - name: measured in an earlier attempt   # marker for lib/rows.mjs
+        if: env.BENCH_MEASURED == 'true'
+        run: echo "measured in an earlier attempt of run $GITHUB_RUN_ID; skipping prepare and build"
       - name: prepare
+        if: env.BENCH_MEASURED != 'true'
         uses: ./bench/.github/actions/prepare
         with:
           repo: ${{ matrix.repo }}
@@ -291,9 +324,10 @@ jobs:
           lang: ${{ matrix.lang }}
           toolchain: ${{ matrix.toolchain }}
       - name: cache hit   # marker for scripts/lib/cache-hit.mjs (see codemany-linux)
-        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true'
+        if: matrix.mode == 'warm' && env.BENCH_CACHE_HIT == 'true' && env.BENCH_MEASURED != 'true'
         run: echo "restored $BENCH_CACHE_KEY"
       - name: build
+        if: env.BENCH_MEASURED != 'true'
         working-directory: src
         run: bash ../bench/scripts/build.sh
       - name: cleanup
