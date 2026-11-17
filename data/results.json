@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-11-17T16:04:53.677Z",
+  "updatedAt": "2026-11-17T17:59:38.751Z",
   "runs": [
     {
       "runId": 41147860813,
@@ -37775,6 +37775,23 @@
       "buildSec": 21,
       "conclusion": "success",
       "cacheHit": true
+    },
+    {
+      "runId": 42743194303,
+      "jobId": 129605879924,
+      "runUrl": "https://github.com/codemanyhq/bench/actions/runs/42743194303",
+      "jobUrl": "https://github.com/codemanyhq/bench/actions/runs/42743194303/job/129605879924",
+      "date": "2026-11-10T03:17:34Z",
+      "project": "excalidraw",
+      "mode": "cold",
+      "side": "codemany",
+      "os": "linux",
+      "runner": "codemany-linux-01-fleet-1-d2653a",
+      "queueSec": 44,
+      "jobSec": 196,
+      "buildSec": 68,
+      "conclusion": "success",
+      "cacheHit": null
     },
     {
       "runId": 42743194303,

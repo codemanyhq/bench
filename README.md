@@ -96,7 +96,7 @@ Public code? GitHub runs it for free, on a bigger Linux computer. See **More num
 | ripgrep | 29s | 0s | 13s | 0s | 2.2× faster |
 | Hugo | 1m 18s | 0s | 31s | 0s | 2.5× faster |
 | react.dev | 1m 57s | 0s | 1m 22s | 0s | 1.4× faster |
-| Excalidraw | 1m 17s | 0s | 1m 10s | 56s | 1.1× faster |
+| Excalidraw | 1m 17s | 0s | 1m 10s | 54s | 1.1× faster |
 | SwiftLint | 14m 27s | 0s | 3m 36s | 0s | 4.0× faster |
 
 ### Public code (free on GitHub), with saved files
