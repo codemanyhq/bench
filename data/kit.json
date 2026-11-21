@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-20T17:25:28.314Z",
+  "updatedAt": "2026-11-21T11:56:26.392Z",
   "privbars": "\n<div class=\"r\"><span>Hugo</span><span class=\"b\"><i style=\"width:100%\"></i></span><span class=\"x\">4.6×</span></div>\n<div class=\"r\"><span>SwiftLint</span><span class=\"b\"><i style=\"width:89%\"></i></span><span class=\"x\">4.1×</span></div>\n<div class=\"r\"><span>ripgrep</span><span class=\"b\"><i style=\"width:75%\"></i></span><span class=\"x\">3.5×</span></div>\n<div class=\"r\"><span>react.dev</span><span class=\"b\"><i style=\"width:49%\"></i></span><span class=\"x\">2.3×</span></div>\n<div class=\"r\"><span>Excalidraw</span><span class=\"b\"><i style=\"width:36%\"></i></span><span class=\"x\">1.6×</span></div>\n",
   "privrange": "1.6× to 4.6×",
   "privrangex": "1.6x to 4.6x",
   "privpairs": "17–19",
-  "privnote": "Linux rests on 17–19 matched runs so far (private Linux timed since Nov 7); SwiftLint on 39. Site headline: 3.0×."
+  "privnote": "Linux rests on 17–19 matched runs so far (private Linux timed since Nov 7); SwiftLint on 40. Site headline: 3.0×."
 }
