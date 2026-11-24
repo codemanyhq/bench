@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-23T20:41:25.806Z",
-  "privbars": "\n<div class=\"r\"><span>Hugo</span><span class=\"b\"><i style=\"width:100%\"></i></span><span class=\"x\">4.5×</span></div>\n<div class=\"r\"><span>SwiftLint</span><span class=\"b\"><i style=\"width:92%\"></i></span><span class=\"x\">4.1×</span></div>\n<div class=\"r\"><span>ripgrep</span><span class=\"b\"><i style=\"width:79%\"></i></span><span class=\"x\">3.5×</span></div>\n<div class=\"r\"><span>react.dev</span><span class=\"b\"><i style=\"width:49%\"></i></span><span class=\"x\">2.2×</span></div>\n<div class=\"r\"><span>Excalidraw</span><span class=\"b\"><i style=\"width:37%\"></i></span><span class=\"x\">1.6×</span></div>\n",
+  "updatedAt": "2026-11-24T01:31:30.576Z",
+  "privbars": "\n<div class=\"r\"><span>Hugo</span><span class=\"b\"><i style=\"width:100%\"></i></span><span class=\"x\">4.5×</span></div>\n<div class=\"r\"><span>SwiftLint</span><span class=\"b\"><i style=\"width:91%\"></i></span><span class=\"x\">4.1×</span></div>\n<div class=\"r\"><span>ripgrep</span><span class=\"b\"><i style=\"width:80%\"></i></span><span class=\"x\">3.6×</span></div>\n<div class=\"r\"><span>react.dev</span><span class=\"b\"><i style=\"width:47%\"></i></span><span class=\"x\">2.1×</span></div>\n<div class=\"r\"><span>Excalidraw</span><span class=\"b\"><i style=\"width:37%\"></i></span><span class=\"x\">1.6×</span></div>\n",
   "privrange": "1.6× to 4.5×",
   "privrangex": "1.6x to 4.5x",
-  "privpairs": "17–21",
-  "privnote": "Linux rests on 17–21 matched runs so far (private Linux timed since Nov 7); SwiftLint on 41. Site headline: 3.0×."
+  "privpairs": "17–22",
+  "privnote": "Linux rests on 17–22 matched runs so far (private Linux timed since Nov 7); SwiftLint on 42. Site headline: 3.0×."
 }
