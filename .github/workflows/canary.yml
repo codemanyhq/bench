@@ -134,17 +134,30 @@ jobs:
     timeout-minutes: 6
     container:
       image: ubuntu:24.04
+      # 2026-11-26: `-e NAME` (no value) copies the runner's CODEMANY_VERSION into the
+      # container, so the job checks its own machine's version. With two Linux machines
+      # (codemany-linux-01 + hetzner-6) this job kept landing on the other one and the gate
+      # failed on placement alone (promotes 45819383082, 45819948132).
+      options: -e CODEMANY_VERSION
     steps:
-      - name: Same machine as the version check
+      - name: Same version as the gate wants
         env:
+          WANT: ${{ inputs.version }}
           MACHINE: ${{ needs.linux.outputs.machine }}
           NAME: ${{ runner.name }}
         run: |
           set -eu
           name="${NAME:-unknown}"
+          got="${CODEMANY_VERSION:-}"; got="${got#v}"
+          if [ -n "$got" ]; then
+            [ "$got" = "${WANT#v}" ] || { echo "::error::container job on $name runs Codemany $got, not ${WANT#v}"; exit 1; }
+            echo "::notice::container job on $name runs Codemany $got"
+            exit 0
+          fi
+          # No version passed in (older daemon): only the version-checked machine counts.
           case "$name" in
-            "$MACHINE"-*) echo "container job on $name" ;;
-            *) echo "::error::container job ran on $name, not on $MACHINE (its version is unchecked): re-run the gate"; exit 1 ;;
+            "$MACHINE"-*) echo "container job on $name (checked by the linux job)" ;;
+            *) echo "::error::container job ran on $name, not on $MACHINE, and has no CODEMANY_VERSION: re-run the gate"; exit 1 ;;
           esac
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
